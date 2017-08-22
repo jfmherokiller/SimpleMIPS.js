@@ -1,1 +1,6 @@
-a 
+/.idea
+node_modules/*
+Refactor/src/*.js
+Refactor/src/*.js.map
+Refactor/*.js
+Refactor/*.js.map
