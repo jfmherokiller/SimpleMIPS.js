@@ -1,5 +1,3 @@
-import {TokenNode} from "./TokenNode";
-
 export class TokenList {
     _list;
     constructor() {
