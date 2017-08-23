@@ -2,6 +2,7 @@ import {Lib} from "./Lib";
 import {TokenList} from "./TokenList";
 import {TokenNode} from "./TokenNode";
 import {Instructions, tokenizer} from "./Instructions";
+import {PseudoInstructions} from "./PseudoInstructions";
 
 export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii'.split(' ');
@@ -15,7 +16,7 @@ export class Assembler {
     constructor() {
         this.regexObject = new tokenizer.regexObject();
         this.InstructionClasses = Instructions.MakeCPUInstructionClasses();
-        this.PiObject = Instructions.MakePiObject();
+        this.PiObject = new PseudoInstructions(this.InstructionClasses);
         this.InstructionTypes = Instructions.MakeInstructionTypeTable(this.InstructionClasses);
     }
 
@@ -215,21 +216,20 @@ export class Assembler {
     // return data, memory array, their size and offset,
     // and source map
     assemble(src, config?) {
-        var lines = this.preprocess(src),
-            i, n = lines.length,
-            symbolTable = {},
-            statusTable = {
-                section: 'text',
-                textSize: 0,
-                dataSize: 0,
-                dataStartAddr: 0,	// data section start address
-                dataCurrentAddr: 0,	// data section current address
-                textStartAddr: 0,	// text section start address
-                textCurrentAddr: 0		// text section current address
-            },
-            aliasTable = {},
-            curTokenList,
-            infoList = [];
+        let lines = Assembler.preprocess(src);
+        let symbolTable = {};
+        let statusTable = {
+            section: 'text',
+            textSize: 0,
+            dataSize: 0,
+            dataStartAddr: 0,	// data section start address
+            dataCurrentAddr: 0,	// data section current address
+            textStartAddr: 0,	// text section start address
+            textCurrentAddr: 0		// text section current address
+        };
+        let aliasTable = {};
+        let curTokenList;
+        let infoList = [];
         config = Lib.extend({}, config);
         // apply user defined properties
         statusTable.dataStartAddr = (config.dataStartAddr != undefined) ? config.dataStartAddr : 0x10000000;
@@ -237,7 +237,7 @@ export class Assembler {
         statusTable.dataCurrentAddr = statusTable.dataStartAddr;
         statusTable.textCurrentAddr = statusTable.textStartAddr;
         // generate infomation list
-        for (i = 0; i < n; i++) {
+        for (let i = 0; i < lines.length; i++) {
             try {
                 curTokenList = this.tokenize(lines[i]);
                 infoList.push.apply(infoList, this.parseLine(curTokenList, i + 1, symbolTable, statusTable));
@@ -251,14 +251,15 @@ export class Assembler {
 
         // translate
         // check section confliction
-        var dStart = statusTable.dataStartAddr,
-            dEnd = statusTable.dataStartAddr + statusTable.dataSize,
-            tStart = statusTable.textStartAddr,
-            tEnd = statusTable.textStartAddr + statusTable.textSize;
+        let dStart = statusTable.dataStartAddr;
+        let dEnd = statusTable.dataStartAddr + statusTable.dataSize;
+        let tStart = statusTable.textStartAddr;
+        let tEnd = statusTable.textStartAddr + statusTable.textSize;
         if (!(dEnd < tStart || dStart > tEnd)) {
             throw new Error('Overlap detected between data section and text section.');
         }
-        var dataMem = [], textMem = [];
+        let dataMem = [];
+        let textMem = [];
         this.translate(infoList, textMem, dataMem, statusTable);
 
         return {
@@ -268,15 +269,15 @@ export class Assembler {
             textSize: statusTable.textSize,
             dataMem: dataMem,
             textMem: textMem,
-            sourceMap: this.generateSourceMap(infoList, statusTable),
+            sourceMap: Assembler.generateSourceMap(infoList, statusTable),
             symbolTable: symbolTable
         };
     }
 
     // strip off comments and split into tokens
-    preprocess(src) {
-        var lines = src.split(/\n/);
-        for (var i = 0, n = lines.length; i < n; i++) {
+    static preprocess(src) {
+        let lines = src.split(/\n/);
+        for (let i = 0, n = lines.length; i < n; i++) {
             lines[i] = lines[i].replace(/#.*$/, '')
                 .trim();
         }
@@ -339,27 +340,27 @@ export class Assembler {
         return 4 * (Math.floor((size - 0.1) / 4.0) + 1);
     }
 
-    convertWord(n) {
+    static convertWord(n) {
         if (n > 2147483647) n = 2147483647;
         if (n < -2147483648) n = -2147483648;
         return (n < 0) ? 4294967296 + n : n;
     }
 
-    convertHalfword(n) {
+    static convertHalfword(n) {
         if (n > 32767) n = 32767;
         if (n < -32768) n = -32768;
         return (n < 0) ? 65536 + n : n;
     }
 
-    convertByte(n) {
+    static convertByte(n) {
         if (n > 127) n = 127;
         if (n < -128) n = -128;
         return (n < 0) ? 256 + n : n;
     }
 
     // pack string into memory binary
-    packString(str) {
-        var i, n, res = [];
+    static packString(str) {
+        let i, n, res = [];
         n = str.length;
         for (i = 3; i < n; i += 4) {
             res.push((str.charCodeAt(i - 3) * 16777216) +
@@ -384,12 +385,12 @@ export class Assembler {
     }
 
     // pack integer list into memory binary
-    packIntegers(list, unitSize) {
-        var result = [], i, n, t;
+    static packIntegers(list, unitSize) {
+        let result = [], i, n, t;
         if (unitSize == 4) {
             n = list.length;
             for (i = 0; i < n; i++) {
-                result.push(this.convertWord(list[i]));
+                result.push(Assembler.convertWord(list[i]));
             }
         } else if (unitSize == 2) {
             n = list.length;
@@ -398,8 +399,8 @@ export class Assembler {
                 n++;
             }
             for (i = 0; i < n; i += 2) {
-                result.push(this.convertHalfword(list[i]) * 65536 +
-                    this.convertHalfword(list[i + 1]));
+                result.push(Assembler.convertHalfword(list[i]) * 65536 +
+                    Assembler.convertHalfword(list[i + 1]));
             }
         } else if (unitSize == 1) {
             n = list.length;
@@ -411,10 +412,10 @@ export class Assembler {
                 n += t;
             }
             for (i = 0; i < n; i += 4) {
-                result.push(this.convertByte(list[i]) * 16777216 +
-                    (this.convertByte(list[i + 1]) << 16) +
-                    (this.convertByte(list[i + 2]) << 8) +
-                    this.convertByte(list[i + 3]));
+                result.push(Assembler.convertByte(list[i]) * 16777216 +
+                    (Assembler.convertByte(list[i + 1]) << 16) +
+                    (Assembler.convertByte(list[i + 2]) << 8) +
+                    Assembler.convertByte(list[i + 3]));
             }
         } else {
             throw new Error('Invaid unit size for alignment.')
@@ -424,7 +425,7 @@ export class Assembler {
 
     // create a data node for future translation
     // alignment is automatically enforced
-    createDataNode(tokenList, type, curAddr, lineno) {
+    static createDataNode(tokenList, type, curAddr, lineno) {
         let curToken;
         let unitSize;
         let newSize;
@@ -446,7 +447,7 @@ export class Assembler {
             // string
             curToken = tokenList.expect(tokenizer.TOKEN_TYPES.STRING);
             if (curToken) {
-                newData = this.packString(curToken.value);
+                newData = Assembler.packString(curToken.value);
                 result.size = newData.length * 4;
                 result.data = newData;
             } else {
@@ -466,7 +467,7 @@ export class Assembler {
             }
             newData = tokenList.expectList(tokenizer.TOKEN_TYPES.INTEGER, tokenizer.TOKEN_TYPES.COMMA);
             if (newData) {
-                newData = this.packIntegers(newData, unitSize);
+                newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;
                 result.data = newData;
             } else {
@@ -507,7 +508,7 @@ export class Assembler {
 
     // create an instruction node for future translation
     createInstructionNode(tokenList, instName, curAddr, lineno) {
-        var result = { // node template
+        let result = { // node template
             type: Assembler.NODE_TYPE.TEXT,
             inst: instName,
             addr: curAddr,
@@ -674,7 +675,7 @@ export class Assembler {
     }
 
     expandPseudoInstruction(tokens, type) {
-        var instName = this.PiObject.PI_NAMES[type],
+        let instName = this.PiObject.PI_NAMES[type],
             expectations = this.PiObject.PI_EXPECTS[type],
             newCode = this.PiObject.PI_TRANSLATION[type],
             expectedTokens;
@@ -716,7 +717,7 @@ export class Assembler {
     //  when text include inst, rs, rd, rt, imm
     // }
     parseLine(tokens, lineno, symbols, status) {
-        var relAddr = 0, curToken, i, flag, tokenRecognized,
+        let relAddr = 0, curToken, i, flag, tokenRecognized,
             curLine, rs, rt, rd, inst, func, idx,
             tmp, result = [];
         while (tokens.getLength() > 0) {
@@ -756,7 +757,7 @@ export class Assembler {
                         throw new Error('Cannot allocate data in text section.')
                     }
                     // allocate storage
-                    tmp = this.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
+                    tmp = Assembler.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
                     status.dataCurrentAddr += tmp.size; // update global data pointer address
                     status.dataSize += tmp.size;
                     result.push(tmp);
@@ -817,13 +818,13 @@ export class Assembler {
 
     convertRegName(regname) {
         // GPRs only
-        var idx;
+        let idx;
         if (regname == 'zero') {
             return 0;
         } else if ((idx = this.regAliases.indexOf(regname)) >= 0) {
             return idx;
         } else {
-            var match = regname.match(/\d+/),
+            let match = regname.match(/\d+/),
                 n;
             if (match) {
                 n = parseInt(match[0]);
@@ -835,7 +836,7 @@ export class Assembler {
     }
 
     resolveSymbols(list, symbols, aliases) {
-        var n = list.length, i, cur, newVal,
+        let n = list.length, i, cur, newVal,
             needHigh16Bits, needLow16Bits;
         for (i = 0; i < n; i++) {
             cur = list[i];
@@ -889,7 +890,7 @@ export class Assembler {
 
     // translate into machine code
     translate(list, text, data, statusTable) {
-        var n = list.length, i, j, k, cur, si, ei;
+        let n = list.length, i, j, k, cur, si, ei;
         for (i = 0; i < n; i++) {
             cur = list[i];
             if (cur.type == Assembler.NODE_TYPE.DATA) {
@@ -917,8 +918,8 @@ export class Assembler {
     }
 
     // generate source map
-    generateSourceMap(list, statusTable) {
-        var n = list.length, i,
+    static generateSourceMap(list, statusTable) {
+        let n = list.length, i,
             ret = [];
         for (i = 0; i < n; i++) {
             let cur = list[i];
