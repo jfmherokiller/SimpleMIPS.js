@@ -49,9 +49,9 @@ export class Instructions {
         'bgtz': ['0001 11ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s>0 pc=pc+sign_ext(imm<<2)
         'bltz': ['0000 01ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s<0 pc=pc+sign_ext(imm<<2)
         'bgez': ['0000 01ss sss0 0001 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s>=0 pc=pc+sign_ext(imm<<2)
-        'bltzal': ['0000 01ss sss1 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], //if $s<0 $31=PC+8 pc=pc+sign_ext(imm<<2);
+        'bltzal': ['0000 01ss sss1 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], //if $s<0; $31=pc+4; pc=pc+sign_ext(imm<<2)
+        'bgezal': ['0000 01ss sss1 0001 iiii iiii iiii iiii', 'RSDRTI', 'S'], //if $s>=0; $31=PC+4; pc=pc+sign_ext(imm<<2)
 
-        //'bgezal': ['',''], //
         // misc
         'nop': ['0000 0000 0000 0000 0000 0000 0000 0000', 'N', 'N'], // no op
         'break': ['0000 00cc cccc cccc cccc cccc cc00 1101', 'N', 'N'], // break
@@ -160,7 +160,7 @@ class CPUInstrclass {
             }
             if(type === 'RSDRTI')
             {
-                funcBody += `base |= (${rt} << 16);\n`;
+                funcBody += `base |= (${parseInt(rt,2)} << 16);\n`;
             }
             // imm
             immStartIdx = cur.indexOf('i');
