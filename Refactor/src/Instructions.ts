@@ -20,6 +20,7 @@ export class Instructions {
         'add': ['0000 00ss ssst tttt dddd d000 0010 0000', 'RRR', 'N'], // $d=$s+$t with ov
         'addu': ['0000 00ss ssst tttt dddd d000 0010 0001', 'RRR', 'N'], // $d=$s+$t unsigned no ov
         'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000','RR',  'N'],
+        'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001','RR',  'N'],
         'sub': ['0000 00ss ssst tttt dddd d000 0010 0010', 'RRR', 'N'], // $d=$s-$t with ov
         'subu': ['0000 00ss ssst tttt dddd d000 0010 0011', 'RRR', 'N'], // $d=$s-$t unsigned no ov
         'slt': ['0000 00ss ssst tttt dddd d000 0010 1010', 'RRR', 'N'], // $d=($s<$t)?1:0 signed

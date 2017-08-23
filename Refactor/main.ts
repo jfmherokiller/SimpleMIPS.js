@@ -14,36 +14,34 @@ function createMIPSSIM() {
 
 main:
         la   $t3,x
-        lw   $t3,0($t3)     # get x
         la   $t0,a
-        lw   $t0,0($t0)     # get a
-        la   $t1,bb
-        lw   $t1,0($t1)     # get bb
+        la   $t1,b
         la   $t2,c
+        lw   $t3,0($t3)     # get x
+        lw   $t0,0($t0)     # get a
+        lw   $t1,0($t1)     # get bb
         lw   $t2,0($t2)     # get c
 
-        mult $t3,$t3        # x2
+        multu $t3,$t3        # x2
         mflo $t4            # $t4 = x2
         nop
         nop
-        mult $t4,$t0        # low  = ax2
+        multu $t4,$t0        # low  = ax2
         mflo $t4            # $t4  = ax2
         nop
         nop
 
-        mult $t1,$t3        # low  = bx
+        multu $t1,$t3        # low  = bx
         mflo $t5            # $t5  = bx
-        addu $t5,$t4,$t5    # $t5  = ax2 + bx
+        add $t5,$t4,$t5    # $t5  = ax2 + bx
 
-        addu $t5,$t5,$t2    # $t5 = ax2 + bx + c
-        la   $t5,value
-        sw   $t5,0($t5)      # value = polynomial
+        add $t5,$t5,$t2    # $t5 = ax2 + bx + c
+        print $t5
 
         .data
 x:      .word   4 
-value:  .word   1 
 a:      .word  20
-bb:     .word  -2           # the SPIM assembler does not allow the label "b"
+b:     .word   -2           
 c:      .word   5
  
  `;
@@ -51,14 +49,26 @@ c:      .word   5
         let cpu = new CPU(mem, CPU.SIM_MODE.FUNCTIONAL);
         let exCode = CPU.EXCEPTION_CODE;
         let assembler = new Assembler();
-        let hexstring = "";
-        let tokeny =assembler.assemble(testcode);
-        tokeny.textMem.forEach(function (value) {
-            hexstring += value.toString(16);
-        });
-        let hexbuffer = Buffer.from(hexstring,'hex');
-        writeFileSync('./code.bin',hexbuffer);
-        console.log(tokeny)
+        let assembleres =assembler.assemble(testcode);
+        mem.importAsm(assembleres);
+        cpu.reset();
+        console.log(assembleres);
+
+    cpu.eventBus.register('print', function (src, type, val) {
+        switch (type) {
+            case 's':
+                console.log('[CPU]' + val, 'info');
+                break;
+            default:
+                console.log('[CPU]' + src + ' = 0x' + val.toString(16), 'info');
+        }
+    });
+        for(let i=0;i<100;i++)
+        {
+            cpu.step();
+        }
+
+        //
 
 }
 createMIPSSIM();

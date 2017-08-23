@@ -911,8 +911,7 @@ export class Assembler {
                 }
             } else {
                 si = (cur.addr - statusTable.textStartAddr) >> 2;
-                let convertedinst = this.InstructionClasses.translators[cur.inst](cur);
-                text[si] = Lib.padLeft(convertedinst.toString(16),"0",8);
+                text[si] = this.InstructionClasses.translators[cur.inst](cur);
             }
         }
     }

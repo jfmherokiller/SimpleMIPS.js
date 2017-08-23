@@ -14,6 +14,7 @@ export class CPU {
     eventBus;
     reset;
     branchTarget;
+    HiLoRegisters={HI:0,LO:0};
 
     // instruction set
     static SIM_MODE = {
@@ -99,12 +100,12 @@ export class CPU {
 
     _fStep(inDelaySlot) {
         //console.log(this);
-        var mem = this.mem,
+        let mem = this.mem,
             r = this.registerFile,
             inst = mem.getWord(this.pc);
         r[0] = 0; // $r0 is always 0
         // decode
-        var tmp = 0,
+        let tmp = 0,
             hasDelaySlot = false,
             nextPC = this.pc + 4,
             exception = 0,
@@ -148,12 +149,25 @@ export class CPU {
                         // @TODO Break
                         exception |= CPU.EXCEPTION_CODE.BREAK;
                         break;
-                    //case 16: // mfhi
+                    case 16: // mfhi
+                        tmp = this.HiLoRegisters.HI;
+                        r[rd] = tmp;
+                        break;
                     //case 17: // mthi
-                    //case 18: // mflo
-                    //case 19: // mtlo
-                    //case 24: // mult
-                    //case 25: // multu
+                    case 18: // mflo
+                        r[rd] = this.HiLoRegisters.LO;
+                        break;
+                    case 19: // mtlo
+                        break;
+                    case 24: // mult
+                        tmp = (r[rs] | 0) * (r[rt] | 0);
+                        this.HiLoRegisters.LO = tmp;
+
+                        break;
+                    case 25: // multu
+                        tmp = (r[rs]) * (r[rt]);
+                        this.HiLoRegisters.LO = tmp;
+                        break;
                     //case 26: // div
                     //case 27: // divu
                     case 32: // add rd, rs, rt with overflow check
@@ -357,7 +371,7 @@ export class CPU {
                         break;
                     case 2: // print string
                         tmp = r[rs];
-                        var str = '', curChar;
+                        let str = '', curChar;
                         while ((curChar = mem.getByte(tmp)) != 0) {
                             str += String.fromCharCode(curChar);
                             tmp++;
