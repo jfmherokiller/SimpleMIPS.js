@@ -1,5 +1,3 @@
-
-
 export class Instructions {
     static instructionTable = {
         // load/store
@@ -12,15 +10,15 @@ export class Instructions {
         'sb': ['1010 00ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (byte)mem[$s+imm]=$t
         'sh': ['1010 01ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (halfword)mem[$s+imm]=$t, must align
         'sw': ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
-        'mfhi'	: ['0000 0000 0000 0000 dddd d000 0001 0000','RT','S'],
-        'mflo'	: ['0000 0000 0000 0000 dddd d000 0001 0010','RT','S'],
+        'mfhi': ['0000 0000 0000 0000 dddd d000 0001 0000', 'RT', 'S'],
+        'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
         'add': ['0000 00ss ssst tttt dddd d000 0010 0000', 'RRR', 'N'], // $d=$s+$t with ov
         'addu': ['0000 00ss ssst tttt dddd d000 0010 0001', 'RRR', 'N'], // $d=$s+$t unsigned no ov
-        'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000','RR',  'N'],
-        'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001','RR',  'N'],
+        'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000', 'RR', 'N'],
+        'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001', 'RR', 'N'],
         'sub': ['0000 00ss ssst tttt dddd d000 0010 0010', 'RRR', 'N'], // $d=$s-$t with ov
         'subu': ['0000 00ss ssst tttt dddd d000 0010 0011', 'RRR', 'N'], // $d=$s-$t unsigned no ov
         'slt': ['0000 00ss ssst tttt dddd d000 0010 1010', 'RRR', 'N'], // $d=($s<$t)?1:0 signed
@@ -47,11 +45,12 @@ export class Instructions {
         // branch (HAVE DELAY SLOTS)
         'beq': ['0001 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s=$t
         'bne': ['0001 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s!=$t
-        'blez': ['0001 10ss sss0 0000 iiii iiii iiii iiii', 'RI', 'S'], // if $s<=0 pc=pc+sign_ext(imm<<2)
-        'bgtz': ['0001 11ss sss0 0000 iiii iiii iiii iiii', 'RI', 'S'], // if $s>0 pc=pc+sign_ext(imm<<2)
-        'bltz': ['0000 01ss sss0 0000 iiii iiii iiii iiii', 'RI', 'S'], // if $s<0 pc=pc+sign_ext(imm<<2)
-        'bgez': ['0000 01ss sss0 0001 iiii iiii iiii iiii', 'RI', 'S'], // if $s>=0 pc=pc+sign_ext(imm<<2)
-        //'bltzal': ['',''], //
+        'blez': ['0001 10ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s<=0 pc=pc+sign_ext(imm<<2)
+        'bgtz': ['0001 11ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s>0 pc=pc+sign_ext(imm<<2)
+        'bltz': ['0000 01ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s<0 pc=pc+sign_ext(imm<<2)
+        'bgez': ['0000 01ss sss0 0001 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s>=0 pc=pc+sign_ext(imm<<2)
+        'bltzal': ['0000 01ss sss1 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], //if $s<0 $31=PC+8 pc=pc+sign_ext(imm<<2);
+
         //'bgezal': ['',''], //
         // misc
         'nop': ['0000 0000 0000 0000 0000 0000 0000 0000', 'N', 'N'], // no op
@@ -60,6 +59,7 @@ export class Instructions {
         'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'R', 'N'], // print mem[$s] simulation
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'R', 'N']  // print string@$s
     };
+
     static MakeCPUInstructionClasses() {
         return new CPUInstrclass()
     }
@@ -81,12 +81,13 @@ class CPUInstrclass {
         RRI: [],
         RRA: [],
         //RRC : [],
-        RR  : [],
+        RR: [],
         RI: [],
+        RSDRTI:[],
         RC: [],
         R: [],
         I: [],
-        RT:[],
+        RT: [],
         N: []
     };
     INST_ALL = [];
@@ -134,12 +135,15 @@ class CPUInstrclass {
             immStartIdx, immEndIdx, immLength;
         for (let inst in Instructions.instructionTable) {
             funcBody = '';
+            let type = Instructions.instructionTable[inst][1];
             cur = Instructions.instructionTable[inst][0]
                 .replace(/c/g, '0') // @TODO: break code support
                 .replace(/a/g, 'i') // a is also i
                 .replace(/-/g, '0')
                 .replace(/ /g, ''); // no need for format
             instCode = parseInt(cur.slice(0, 6), 2);
+            let rs = cur.slice(6,11);
+            let rt = cur.slice(11,16);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
@@ -153,6 +157,10 @@ class CPUInstrclass {
             }
             if (cur.indexOf('t') > 0) {
                 funcBody += 'base |= (info.rt << 16);\n';
+            }
+            if(type === 'RSDRTI')
+            {
+                funcBody += `base |= (${rt} << 16);\n`;
             }
             // imm
             immStartIdx = cur.indexOf('i');
@@ -172,50 +180,10 @@ class CPUInstrclass {
                 funcCode = parseInt(cur.slice(26, 32), 2);
                 funcBody += 'base |= ' + (funcCode) + ';\n';
             }
-            funcBody += 'if (base < 0) base = 4294967296 + base;\n'
+            funcBody += 'if (base < 0) base = 4294967296 + base;\n';
             funcBody += 'return base;';
             translators[inst] = new Function('info', funcBody);
         }
         this.translators = translators;
-    }
-}
-
-export module tokenizer {
-    export const enum TOKEN_TYPES {
-        SPECIAL,
-        LABEL,
-        STRING,
-        COMMA,
-        SPACE,
-        REGOPR,
-        COMOPR,
-        INTEGER,
-        WORD,
-    }
-
-    export class regexObject {
-        tokenRegexps: RegExp[] = [];
-        tokenTypeNames: string[] = [];
-        tokenTypeCount: number = 0;
-
-        addRegexLine(type: TOKEN_TYPES, regex: RegExp)
-        {
-            this.tokenTypeNames.push(type.toString());
-            this.tokenRegexps.push(regex);
-            this.tokenTypeCount++;
-        }
-        constructor()
-        {
-            this.addRegexLine(TOKEN_TYPES.SPECIAL, /^\.\w+/);
-            this.addRegexLine(TOKEN_TYPES.LABEL,/^(\w+):/);
-            this.addRegexLine(TOKEN_TYPES.STRING,/^"(([^\\"]|\\.)*)"/);
-            this.addRegexLine(TOKEN_TYPES.COMMA,/^\s*,\s*/);
-            this.addRegexLine(TOKEN_TYPES.SPACE,/^\s+/);
-            this.addRegexLine(TOKEN_TYPES.REGOPR, /^(\$\w{1,2}|zero)/);
-            // char is also integer
-            this.addRegexLine(TOKEN_TYPES.COMOPR, /^(-*\d*)\((\$\w{1,2}|zero)\)/);
-            this.addRegexLine(TOKEN_TYPES.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/);
-            this.addRegexLine(TOKEN_TYPES.WORD, /^(\w+)(?!:)/);
-        }
     }
 }
