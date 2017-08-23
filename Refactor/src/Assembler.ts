@@ -1,8 +1,9 @@
 import {Lib} from "./Lib";
 import {TokenList} from "./TokenList";
 import {TokenNode} from "./TokenNode";
-import {Instructions, tokenizer} from "./Instructions";
-import {PseudoInstructions} from "./PseudoInstructions";
+import {Instructions} from "./Instructions/Instructions";
+import {PseudoInstructions} from "./Instructions/PseudoInstructions";
+import {regexObject, TOKEN_TYPES} from "./Tokenizer";
 
 export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii'.split(' ');
@@ -14,7 +15,7 @@ export class Assembler {
     InstructionTypes;
 
     constructor() {
-        this.regexObject = new tokenizer.regexObject();
+        this.regexObject = new regexObject();
         this.InstructionClasses = Instructions.MakeCPUInstructionClasses();
         this.PiObject = new PseudoInstructions(this.InstructionClasses);
         this.InstructionTypes = Instructions.MakeInstructionTypeTable(this.InstructionClasses);
@@ -299,19 +300,19 @@ export class Assembler {
                 if (matches && matches[0]) {
                     newNode = new TokenNode(i);
                     switch (i) {
-                        case tokenizer.TOKEN_TYPES.STRING:
+                        case TOKEN_TYPES.STRING:
                             // preserve original case for string
                             newNode.value = matches[1];
                             break;
-                        case tokenizer.TOKEN_TYPES.WORD:
-                        case tokenizer.TOKEN_TYPES.LABEL:
+                        case TOKEN_TYPES.WORD:
+                        case TOKEN_TYPES.LABEL:
                             newNode.value = matches[1].toLowerCase();
                             break;
-                        case tokenizer.TOKEN_TYPES.COMOPR:
+                        case TOKEN_TYPES.COMOPR:
                             newNode.offset = parseInt(matches[1]);
                             newNode.value = matches[2].toLowerCase();
                             break;
-                        case tokenizer.TOKEN_TYPES.INTEGER:
+                        case TOKEN_TYPES.INTEGER:
                             if (matches[2]) {
                                 // preserve original case for char
                                 newNode.value = matches[2].charCodeAt(0);
@@ -435,7 +436,7 @@ export class Assembler {
         result.addr = curAddr;
         if (type == '.space') {
             // allocate new space, no specific data needed
-            curToken = tokenList.expect(tokenizer.TOKEN_TYPES.INTEGER);
+            curToken = tokenList.expect(TOKEN_TYPES.INTEGER);
             if (curToken) {
                 newSize = Assembler.alignSize(curToken.value);
                 result.size = newSize;
@@ -445,7 +446,7 @@ export class Assembler {
             }
         } else if (type == '.asciiz' || type == '.ascii') {
             // string
-            curToken = tokenList.expect(tokenizer.TOKEN_TYPES.STRING);
+            curToken = tokenList.expect(TOKEN_TYPES.STRING);
             if (curToken) {
                 newData = Assembler.packString(curToken.value);
                 result.size = newData.length * 4;
@@ -465,7 +466,7 @@ export class Assembler {
                 default :
                     unitSize = 4 // word
             }
-            newData = tokenList.expectList(tokenizer.TOKEN_TYPES.INTEGER, tokenizer.TOKEN_TYPES.COMMA);
+            newData = tokenList.expectList(TOKEN_TYPES.INTEGER, TOKEN_TYPES.COMMA);
             if (newData) {
                 newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;
@@ -534,9 +535,9 @@ export class Assembler {
         switch (type) {
             case this.InstructionTypes.INST_TYPES.RR: // e.g. mult rs, rt
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.REGOPR
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.REGOPR
                 ]);
                 if (expectedTokens) {
                     result.rs = expectedTokens[0].value;
@@ -547,11 +548,11 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.RRR: // e.g. add rd, rs, rt
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.REGOPR
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.REGOPR
                 ]);
                 if (expectedTokens) {
                     result.rd = expectedTokens[0].value;
@@ -563,11 +564,11 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.RRI: // e.g. addi rt, rs, imm
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    [tokenizer.TOKEN_TYPES.WORD, tokenizer.TOKEN_TYPES.INTEGER]
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    [TOKEN_TYPES.WORD, TOKEN_TYPES.INTEGER]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -583,11 +584,11 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.RRA: // e.g. sll rd, rt, amount
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.INTEGER
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.INTEGER
                 ]);
                 if (expectedTokens) {
                     result.rd = expectedTokens[0].value;
@@ -603,9 +604,9 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.RC: // e.g. lw rt, offset(base)
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    tokenizer.TOKEN_TYPES.COMOPR
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    TOKEN_TYPES.COMOPR
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -621,11 +622,24 @@ export class Assembler {
                     throw new Error('Expecting 1 register operand and 1 immediate for ' + instName);
                 }
                 break;
+            case this.InstructionTypes.INST_TYPES.RSDRTI: // e.g. blez rs, imm
+                expectedTokens = tokenList.expect([
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    [TOKEN_TYPES.WORD, TOKEN_TYPES.INTEGER]
+                ]);
+                if (expectedTokens) {
+                    result.rs = expectedTokens[0].value;
+                    result.imm = expectedTokens[2].value;
+                } else {
+                    throw new Error('Expecting 1 register operand and 1 immediate for ' + instName);
+                }
+                break;
             case this.InstructionTypes.INST_TYPES.RI: // e.g. blez rs, imm
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
-                    tokenizer.TOKEN_TYPES.COMMA,
-                    [tokenizer.TOKEN_TYPES.WORD, tokenizer.TOKEN_TYPES.INTEGER]
+                    TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.COMMA,
+                    [TOKEN_TYPES.WORD, TOKEN_TYPES.INTEGER]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -636,7 +650,7 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.R: // e.g. jr rs
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.REGOPR,
                 ]);
                 if (expectedTokens) {
                     result.rs = expectedTokens[0].value;
@@ -646,7 +660,7 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.RT: // e.g. mflo rd
                 expectedTokens = tokenList.expect([
-                    tokenizer.TOKEN_TYPES.REGOPR,
+                    TOKEN_TYPES.REGOPR,
                 ]);
                 if (expectedTokens) {
                     result.rd = expectedTokens[0].value;
@@ -656,7 +670,7 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.I:
                 expectedTokens = tokenList.expect([
-                    [tokenizer.TOKEN_TYPES.WORD, tokenizer.TOKEN_TYPES.INTEGER]
+                    [TOKEN_TYPES.WORD, TOKEN_TYPES.INTEGER]
                 ]);
                 if (expectedTokens) {
                     result.imm = expectedTokens[0].value;
@@ -722,13 +736,13 @@ export class Assembler {
             tmp, result = [];
         while (tokens.getLength() > 0) {
             // consume white space
-            tokens.expect(tokenizer.TOKEN_TYPES.SPACE);
+            tokens.expect(TOKEN_TYPES.SPACE);
             tokenRecognized = false;
             // label
-            curToken = tokens.expect(tokenizer.TOKEN_TYPES.LABEL);
+            curToken = tokens.expect(TOKEN_TYPES.LABEL);
             if (curToken) {
                 // consume white space
-                tokens.expect(tokenizer.TOKEN_TYPES.SPACE);
+                tokens.expect(TOKEN_TYPES.SPACE);
                 if (symbols[curToken.value]) {
                     throw new Error('Symbol "' + curToken.value + '" is redefined!');
                 } else {
@@ -738,14 +752,14 @@ export class Assembler {
                 tokenRecognized = true;
             }
             // specials
-            curToken = tokens.expect(tokenizer.TOKEN_TYPES.SPECIAL);
+            curToken = tokens.expect(TOKEN_TYPES.SPECIAL);
             if (curToken) {
                 // consume white space
-                tokens.expect(tokenizer.TOKEN_TYPES.SPACE);
+                tokens.expect(TOKEN_TYPES.SPACE);
                 if(curToken.value == '.globl') {
                     //consume the globl token in a noop
-                    tokens.expect(tokenizer.TOKEN_TYPES.SPACE);
-                    tokens.expect(tokenizer.TOKEN_TYPES.WORD);
+                    tokens.expect(TOKEN_TYPES.SPACE);
+                    tokens.expect(TOKEN_TYPES.WORD);
                 }else if (curToken.value == '.data') {
                     // change to data section
                     status.section = 'data';
@@ -767,13 +781,13 @@ export class Assembler {
                 tokenRecognized = true;
             }
             // instructions
-            curToken = tokens.expect(tokenizer.TOKEN_TYPES.WORD);
+            curToken = tokens.expect(TOKEN_TYPES.WORD);
             if (curToken) {
                 if (status.section != 'text') {
                     throw new Error('Instructions cannot be put into data section.')
                 }
                 // consume white space
-                tokens.expect(tokenizer.TOKEN_TYPES.SPACE);
+                tokens.expect(TOKEN_TYPES.SPACE);
                 tokenRecognized = true;
                 inst = curToken.value;
                 flag = false;
