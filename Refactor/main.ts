@@ -1,59 +1,41 @@
-
 import {Memory} from "./src/Memory";
 import {CPU} from "./src/CPU";
 import {Assembler} from "./src/Assembler";
-import {writeFileSync} from "fs";
+import {Lib} from "./src/Lib";
 
 function createMIPSSIM() {
     let testcode = `
-## pseudoPoly.asm
-## evaluate the polynomial ax2 + bx + c
-##
-        .text
-        .globl  main
-
+# hello world program
+# support .data and .text
+.data
+str: .asciiz "hello world!"
+.text
 main:
-        la   $t3,x
-        la   $t0,a
-        la   $t1,b
-        la   $t2,c
-        lw   $t3,0($t3)     # get x
-        lw   $t0,0($t0)     # get a
-        lw   $t1,0($t1)     # get bb
-        lw   $t2,0($t2)     # get c
-
-        multu $t3,$t3        # x2
-        mflo $t4            # $t4 = x2
-        nop
-        nop
-        multu $t4,$t0        # low  = ax2
-        mflo $t4            # $t4  = ax2
-        nop
-        nop
-
-        multu $t1,$t3        # low  = bx
-        mflo $t5            # $t5  = bx
-        add $t5,$t4,$t5    # $t5  = ax2 + bx
-
-        add $t5,$t5,$t2    # $t5 = ax2 + bx + c
-        print $t5
-
-        .data
-x:      .word   4 
-a:      .word  20
-b:     .word   -2           
-c:      .word   5
- 
+        li $v0,4
+        mthi $v0
+        mtlo $v0
+        break
  `;
-        let mem = new Memory();
-        let cpu = new CPU(mem, CPU.SIM_MODE.FUNCTIONAL);
-        let exCode = CPU.EXCEPTION_CODE;
-        let assembler = new Assembler();
-        let assembleres =assembler.assemble(testcode);
-        mem.importAsm(assembleres);
-        cpu.reset();
-        console.log(assembleres);
+    let assembler = new Assembler();
+    let mem = new Memory();
+    let cpu = new CPU.FunctionalCPU(mem);
+    let exCode = CPU.EXCEPTION_CODE;
+    registerEvents(cpu);
+    //
 
+    let assembleres = assembler.assemble(testcode);
+    mem.importAsm(assembleres);
+    cpu.reset();
+    console.log(assembleres);
+
+    assembleres.textMem.forEach(function (value) {
+        console.log(Lib.padLeft(value.toString(16),"0",8))
+    });
+    Runcpu(cpu,exCode);
+    console.log(cpu.dumpRegisterFile());
+}
+
+function registerEvents(cpu) {
     cpu.eventBus.register('print', function (src, type, val) {
         switch (type) {
             case 's':
@@ -63,12 +45,16 @@ c:      .word   5
                 console.log('[CPU]' + src + ' = 0x' + val.toString(16), 'info');
         }
     });
-        for(let i=0;i<100;i++)
-        {
-            cpu.step();
-        }
-
-        //
-
 }
+
+function Runcpu(cpu,excode) {
+    for (let i = 0; i < 12500; i++) {
+        let exception =cpu.step();
+        if(exception === CPU.EXCEPTION_CODE.BREAK)
+        {
+            break;
+        }
+    }
+}
+
 createMIPSSIM();
