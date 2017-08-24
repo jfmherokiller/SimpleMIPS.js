@@ -80,28 +80,26 @@ export namespace CPU {
         eventBus;
         reset;
         branchTarget;
-        HiLoRegisterFile = new Uint32Array(2);
 
         constructor(mem, callbacks?) {
             this.eventBus = new EventBus();
             this.mem = mem;
             this.pc = 0;
             this.cycle = 0;
-            this.registerFile = new Uint32Array(32);
+            //this contains the basic registers and hi,lo which are 32 and 33 respectively
+            this.registerFile = new Uint32Array(34);
             this.callbacks = callbacks || {};
         }
 
         dumpRegisterFile(buffer?) {
             if (!buffer) {
                 let str = '';
-                for (let i = 0; i < 32; i++) {
+                for (let i = 0; i < 34; i++) {
                     str += 'r' + i + '\t: 0x' + Lib.padLeft(this.registerFile[i].toString(16), '0', 8) + '\n';
                 }
-                str  +='rHI' + '\t: 0x' + Lib.padLeft(this.HiLoRegisterFile[0], '0', 8) + '\n';
-                str  +='rLO' + '\t: 0x' + Lib.padLeft(this.HiLoRegisterFile[1], '0', 8) + '\n';
                 return str;
             } else {
-                for (let i = 0; i < 32; i++) {
+                for (let i = 0; i < 34; i++) {
                     buffer[i] = this.registerFile[i];
                 }
             }
@@ -177,43 +175,42 @@ export namespace CPU {
                             exception |= CPU.EXCEPTION_CODE.BREAK;
                             break;
                         case 16: // mfhi
-                            tmp = this.HiLoRegisterFile[0];
+                            tmp = r[32];
                             r[rd] = tmp;
                             break;
                         case 17: // mthi
                             tmp = r[rs];
-                            this.HiLoRegisterFile[0] = tmp;
+                            r[32] = tmp;
                             break;
                         case 18: // mflo
-                            r[rd] = this.HiLoRegisterFile[1];
+                            r[rd] = r[33];
                             break;
                         case 19: // mtlo
-                            tmp = r[rs];
-                            this.HiLoRegisterFile[1] = tmp;
+                            r[33] = r[rs];
                             break;
                         case 24: // mult
                             tmp = (r[rs] | 0) * (r[rt] | 0);
                             if (tmp > 0x7fffffff || tmp < -0x80000000) {
                                 exception |= CPU.EXCEPTION_CODE.INT_OVERFLOW;
                             }
-                            this.HiLoRegisterFile[1] = tmp;
+                            r[33] = tmp;
 
                             break;
                         case 25: // multu
                             tmp = (r[rs]) * (r[rt]);
-                            this.HiLoRegisterFile[1] = tmp;
+                            r[33] = tmp;
                             break;
                         case 26: // div
                             tmp = (r[rs]|0) % (r[rt]|0);
-                            this.HiLoRegisterFile[0] = tmp;
+                            r[32] = tmp;
                             tmp = Math.floor(((r[rs]|0) / (r[rt]|0)));
-                            this.HiLoRegisterFile[1] = tmp;
+                            r[33] = tmp;
                             break;
                         case 27: // divu
                             tmp = (r[rs]|0) % (r[rt]|0);
-                            this.HiLoRegisterFile[0] = tmp;
+                            r[32] = tmp;
                             tmp = Math.floor(((r[rs]|0) / (r[rt]|0)));
-                            this.HiLoRegisterFile[1] = tmp;
+                            r[33] = tmp;
                             break;
                         case 32: // add rd, rs, rt with overflow check
                             // JavaScript casting trick here
