@@ -180,11 +180,16 @@ export namespace CPU {
                             tmp = this.HiLoRegisterFile[0];
                             r[rd] = tmp;
                             break;
-                        //case 17: // mthi
+                        case 17: // mthi
+                            tmp = r[rs];
+                            this.HiLoRegisterFile[0] = tmp;
+                            break;
                         case 18: // mflo
                             r[rd] = this.HiLoRegisterFile[1];
                             break;
                         case 19: // mtlo
+                            tmp = r[rs];
+                            this.HiLoRegisterFile[1] = tmp;
                             break;
                         case 24: // mult
                             tmp = (r[rs] | 0) * (r[rt] | 0);

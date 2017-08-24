@@ -9,9 +9,11 @@ export class Instructions {
         'lw': ['1000 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // $t=(word)mem[$s+imm]
         'sb': ['1010 00ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (byte)mem[$s+imm]=$t
         'sh': ['1010 01ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (halfword)mem[$s+imm]=$t, must align
-        'sw': ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
+        'sw':   ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
         'mfhi': ['0000 0000 0000 0000 dddd d000 0001 0000', 'RT', 'S'],
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
+        'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
+        'mtlo': ['0000 00ss sss0 0000 0000 0000 0001 0011', 'RS', 'S'],
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
@@ -43,7 +45,7 @@ export class Instructions {
         'srav': ['0000 00ss ssst tttt dddd d000 0000 0111', 'RRR', 'N'], // $d=$t>>($s&0x1f) arithmetic
         // jmp (HAVE DELAY SLOTS)
         'j': ['0000 10ii iiii iiii iiii iiii iiii iiii', 'I', 'U'], // imm<<2 specify low bits of pc
-        'jr': ['0000 00ss sss0 0000 0000 0000 0000 1000', 'R', 'N'], // pc=$s
+        'jr': ['0000 00ss sss0 0000 0000 0000 0000 1000', 'RS', 'N'], // pc=$s
         // branch (HAVE DELAY SLOTS)
         'beq': ['0001 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s=$t
         'bne': ['0001 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s!=$t
@@ -57,9 +59,9 @@ export class Instructions {
         // misc
         'nop': ['0000 0000 0000 0000 0000 0000 0000 0000', 'N', 'N'], // no op
         'break': ['0000 00cc cccc cccc cccc cccc cc00 1101', 'N', 'N'], // break
-        'print': ['1111 11ss sss0 0000 0000 0000 0000 0000', 'R', 'N'], // print $s simulation
-        'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'R', 'N'], // print mem[$s] simulation
-        'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'R', 'N']  // print string@$s
+        'print': ['1111 11ss sss0 0000 0000 0000 0000 0000', 'RS', 'N'], // print $s simulation
+        'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'RS', 'N'], // print mem[$s] simulation
+        'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N']  // print string@$s
     };
 
     static MakeCPUInstructionClasses() {
@@ -87,7 +89,7 @@ class CPUInstrclass {
         RI: [],
         RSDRTI:[],
         RC: [],
-        R: [],
+        RS: [],
         I: [],
         RT: [],
         N: []

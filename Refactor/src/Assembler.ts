@@ -648,7 +648,7 @@ export class Assembler {
                     throw new Error('Expecting 1 register operand and 1 immediate for ' + instName);
                 }
                 break;
-            case this.InstructionTypes.INST_TYPES.R: // e.g. jr rs
+            case this.InstructionTypes.INST_TYPES.RS: // e.g. jr rs
                 expectedTokens = tokenList.expect([
                     TOKEN_TYPES.REGOPR,
                 ]);

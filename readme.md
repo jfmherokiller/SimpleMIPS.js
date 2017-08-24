@@ -3,7 +3,7 @@ Simple MIPS Simulator in JavaScript (Experimental)
 
 This is an experimental project after taking the computer architecture course during my undergraduate study. Basically it provides a basic playground for MIPS assembly. However, only a limited set of instructions are available due to limited time:
 
-- **Memory access**: lb, lbu, lh, lhu, lui, lw, sb, sh, sw, mfhi, mflo
+- **Memory access**: lb, lbu, lh, lhu, lui, lw, sb, sh, sw, mfhi, mflo, mthi, mtlo
 - **Arithmetic operations**: addi, addiu, add, addu, sub, subu, slt, slti, sltu, sltiu, mult, multu, div, divu
 - **Logical operations**: and, andi, or, ori, xor, xori, nor, sll, sllv, srl, sra, srlv, srav
 - **Jump**: j, jr
