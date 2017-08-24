@@ -133,6 +133,10 @@ class CPUInstrclass {
                 }
             }
         }
+        this.CreateTranslators(cur);
+    }
+
+    private CreateTranslators(cur) {
 // build translators
         let translators = {}, funcBody,
             instCode, funcCode,
@@ -146,8 +150,8 @@ class CPUInstrclass {
                 .replace(/-/g, '0')
                 .replace(/ /g, ''); // no need for format
             instCode = parseInt(cur.slice(0, 6), 2);
-            let rs = cur.slice(6,11);
-            let rt = cur.slice(11,16);
+            let rs = cur.slice(6, 11);
+            let rt = cur.slice(11, 16);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
@@ -162,9 +166,8 @@ class CPUInstrclass {
             if (cur.indexOf('t') > 0) {
                 funcBody += 'base |= (info.rt << 16);\n';
             }
-            if(type === 'RSDRTI')
-            {
-                funcBody += `base |= (${parseInt(rt,2)} << 16);\n`;
+            if (type === 'RSDRTI') {
+                funcBody += `base |= (${parseInt(rt, 2)} << 16);\n`;
             }
             // imm
             immStartIdx = cur.indexOf('i');
