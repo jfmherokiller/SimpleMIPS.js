@@ -9,7 +9,7 @@ export class Instructions {
         'lw': ['1000 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // $t=(word)mem[$s+imm]
         'sb': ['1010 00ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (byte)mem[$s+imm]=$t
         'sh': ['1010 01ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (halfword)mem[$s+imm]=$t, must align
-        'sw':   ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
+        'sw': ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
         'mfhi': ['0000 0000 0000 0000 dddd d000 0001 0000', 'RT', 'S'],
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
@@ -19,8 +19,8 @@ export class Instructions {
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
         'add': ['0000 00ss ssst tttt dddd d000 0010 0000', 'RRR', 'N'], // $d=$s+$t with ov
         'addu': ['0000 00ss ssst tttt dddd d000 0010 0001', 'RRR', 'N'], // $d=$s+$t unsigned no ov
-        'div':['0000 00ss ssst tttt 0000 0000 0001 1010','RR','S'], // $LO = $s / $t; $HI = $s % $t;
-        'divu':['0000 00ss ssst tttt 0000 0000 0001 1011','RR','U'], // $LO = $s / $t; $HI = $s % $t;
+        'div': ['0000 00ss ssst tttt 0000 0000 0001 1010', 'RR', 'S'], // $LO = $s / $t; $HI = $s % $t;
+        'divu': ['0000 00ss ssst tttt 0000 0000 0001 1011', 'RR', 'U'], // $LO = $s / $t; $HI = $s % $t;
         'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000', 'RR', 'N'], //$LO = $s * $t;
         'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001', 'RR', 'N'],//$LO = $s * $t;
         'sub': ['0000 00ss ssst tttt dddd d000 0010 0010', 'RRR', 'N'], // $d=$s-$t with ov
@@ -87,7 +87,7 @@ class CPUInstrclass {
         //RRC : [],
         RR: [],
         RI: [],
-        RSDRTI:[],
+        RSDRTI: [],
         RC: [],
         RS: [],
         I: [],

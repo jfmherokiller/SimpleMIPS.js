@@ -1,5 +1,3 @@
-
-
 export class Lib {
     // add methods
     static methods(obj, fns) {
@@ -11,9 +9,9 @@ export class Lib {
     }
 
     static padLeft(str, chr, len) {
-        var n = len - str.length;
+        let n = len - str.length;
         if (n <= 0) return str;
-        for (var i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             str = chr + str;
         }
         return str;
@@ -22,23 +20,24 @@ export class Lib {
     static extend(src, obj, obj2?) {
         if (obj2) {
             // merge 3
-            for (var key1 in obj2) {
+            for (let key1 in obj2) {
                 obj[key1] = obj2[key1];
             }
-            for (var key2 in obj) {
+            for (let key2 in obj) {
                 src[key2] = obj[key2];
             }
         } else {
             // merge 2
-            for (var key in obj) {
+            for (let key in obj) {
                 src[key] = obj[key];
             }
             return src;
         }
     }
+
 // find overlapped elements
     static overlap(arr1, arr2) {
-        var i, j,
+        let i, j,
             m = arr1.length,
             n = arr2.length,
             result = [];

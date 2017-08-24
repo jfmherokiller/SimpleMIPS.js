@@ -1,5 +1,6 @@
 export class TokenList {
     _list;
+
     constructor() {
         this._list = [];
     }
@@ -77,6 +78,7 @@ export class TokenList {
         }
         return result;
     }
+
     // expect a constant list
     // eg. 12, 23, 23
     // return an Array of list items
