@@ -39,7 +39,7 @@ let memoryaccess_opcodelist:opcodeObject[] = [
 describe("Assembler Tests",function () {
     describe("Memory Access Opcodes",function () {
         memoryaccess_opcodelist.forEach(function (opcode) {
-            it('correctly assembles the opcode ' + opcode.instruction + ' args', function() {
+            it('correctly assembles the opcode ' + opcode.instruction, function() {
                 let assemblout = new Assembler().assemble(ReturnTestAsm(opcode.instruction)).textMem[2].toString(16);
                 let paddedOpcode = Lib.padLeft(assemblout,"0",8);
                 assert.equal(paddedOpcode,opcode.result);
