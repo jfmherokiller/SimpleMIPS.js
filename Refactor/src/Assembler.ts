@@ -760,10 +760,10 @@ export class Assembler {
                     //consume the globl token in a noop
                     tokens.expect(TOKEN_TYPES.SPACE);
                     tokens.expect(TOKEN_TYPES.WORD);
-                }else if (curToken.value == '.data') {
+                }else if (curToken.value == '.data' || curToken.value === '.kdata') {
                     // change to data section
                     status.section = 'data';
-                } else if (curToken.value == '.text') {
+                } else if (curToken.value == '.text' || curToken.value === '.ktext') {
                     // change to text section
                     status.section = 'text';
                 } else if (Assembler.STORAGE_TYPES.indexOf(curToken.value) >= 0) {
