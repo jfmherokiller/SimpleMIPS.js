@@ -1,7 +1,7 @@
-import {Memory} from "./src/Memory";
-import {Assembler} from "./src/Assembler";
-import {Lib} from "./src/Lib";
-import {EXCEPTION_CODE, FunctionalCPU} from "./src/CPU";
+import {Memory} from "../src/Memory";
+import {Assembler} from "../src/Assembler";
+import {Lib} from "../src/Lib";
+import {EXCEPTION_CODE, FunctionalCPU} from "../src/CPU";
 
 function createMIPSSIM() {
     let testcode = `
