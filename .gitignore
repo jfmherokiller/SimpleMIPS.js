@@ -1,5 +1,5 @@
 /.idea
 node_modules/*
-Refactor/**/*.js
-Refactor/**/*.js.map
+**/*.js
+**/*.js.map
 **/.DS_Store
