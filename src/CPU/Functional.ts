@@ -3,7 +3,7 @@
 
 
 import {CPUInternal} from "./CPU";
-import {EXCEPTION_CODE, MAX_PC} from "./index";
+import {EXCEPTION_CODE, MAX_PC, REGISTERS} from "./index";
 import {Lib} from "../Lib";
 
 
@@ -74,42 +74,42 @@ import {Lib} from "../Lib";
                             exception |= EXCEPTION_CODE.BREAK;
                             break;
                         case 16: // mfhi
-                            tmp = r[32];
+                            tmp = r[REGISTERS.$HI];
                             r[rd] = tmp;
                             break;
                         case 17: // mthi
                             tmp = r[rs];
-                            r[32] = tmp;
+                            r[REGISTERS.$HI] = tmp;
                             break;
                         case 18: // mflo
-                            r[rd] = r[33];
+                            r[rd] = r[REGISTERS.$LO];
                             break;
                         case 19: // mtlo
-                            r[33] = r[rs];
+                            r[REGISTERS.$LO] = r[rs];
                             break;
                         case 24: // mult
                             tmp = (r[rs] | 0) * (r[rt] | 0);
                             if (tmp > 0x7fffffff || tmp < -0x80000000) {
                                 exception |= EXCEPTION_CODE.INT_OVERFLOW;
                             }
-                            r[33] = tmp;
+                            r[REGISTERS.$LO] = tmp;
 
                             break;
                         case 25: // multu
                             tmp = (r[rs]) * (r[rt]);
-                            r[33] = tmp;
+                            r[REGISTERS.$LO] = tmp;
                             break;
                         case 26: // div
                             tmp = (r[rs] | 0) % (r[rt] | 0);
-                            r[32] = tmp;
+                            r[REGISTERS.$HI] = tmp;
                             tmp = Math.floor(((r[rs] | 0) / (r[rt] | 0)));
-                            r[33] = tmp;
+                            r[REGISTERS.$LO] = tmp;
                             break;
                         case 27: // divu
                             tmp = (r[rs] | 0) % (r[rt] | 0);
-                            r[32] = tmp;
+                            r[REGISTERS.$HI] = tmp;
                             tmp = Math.floor(((r[rs] | 0) / (r[rt] | 0)));
-                            r[33] = tmp;
+                            r[REGISTERS.$LO] = tmp;
                             break;
                         case 32: // add rd, rs, rt with overflow check
                             // JavaScript casting trick here
