@@ -1,7 +1,7 @@
 import {Memory} from "./src/Memory";
-import {CPU} from "./src/CPU";
 import {Assembler} from "./src/Assembler";
 import {Lib} from "./src/Lib";
+import {EXCEPTION_CODE, FunctionalCPU} from "./src/CPU";
 
 function createMIPSSIM() {
     let testcode = `
@@ -18,8 +18,8 @@ main:
  `;
     let assembler = new Assembler();
     let mem = new Memory();
-    let cpu = new CPU.FunctionalCPU(mem);
-    let exCode = CPU.EXCEPTION_CODE;
+    let cpu = new FunctionalCPU(mem);
+    let exCode = EXCEPTION_CODE;
     registerEvents(cpu);
     //
 
@@ -50,7 +50,7 @@ function registerEvents(cpu) {
 function Runcpu(cpu,excode) {
     for (let i = 0; i < 12500; i++) {
         let exception =cpu.step();
-        if(exception === CPU.EXCEPTION_CODE.BREAK)
+        if(exception === EXCEPTION_CODE.BREAK)
         {
             break;
         }
