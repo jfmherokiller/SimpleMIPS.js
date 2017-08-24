@@ -9,11 +9,11 @@ function createMIPSSIM() {
 # support .data and .text
 .data
 str: .asciiz "hello world!"
+byteme: .byte 53
 .text
 main:
-        li $v0,4
-        mthi $v0
-        mtlo $v0
+        la $v1,byteme
+        lb $v0,0($v1)
         break
  `;
     let assembler = new Assembler();
