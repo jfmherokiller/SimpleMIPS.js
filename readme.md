@@ -10,7 +10,6 @@ This is an experimental project after taking the computer architecture course du
 - **Conditional branch**: beq, bne, blez, bgtz, bltz, bgez,bltzal,bgezal
 - **Misc/Pseudo instructions**: nop, break, print prints, printm
 
-
 It should be noted that the detailed 5-stage pipeline implementation does not reflect any real MIPS processor. It is my own implantation for my course project, where the branching logic was put in the instruction decoding stage. The memory model is also ideal so there is no additional delay in the writeback stage.
 
 I have implemented both the functional simulator and the pipeline simulator, both of which can be found in SimpleMIPS.js. A mini-assembler is also included. While the basic "to upper case" program works well, it is not guaranteed to be bug-free (probably lots of bugs). [jQuery](http://jquery.com/) and [Normalize.css](http://necolas.github.io/normalize.css/) was used when implementing the interface.
