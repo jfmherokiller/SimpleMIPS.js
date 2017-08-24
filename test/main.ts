@@ -13,7 +13,9 @@ byteme: .byte 53
 .text
 main:
         la $v1,byteme
-        lb $v0,0($v1)
+        #lb $v0,0($v1)
+        #lbu $v0,0($v1)
+        mtlo $v0
         break
  `;
     let assembler = new Assembler();

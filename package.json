@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "dependencies": {},
   "devDependencies": {
+    "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "^8.0.24",
+    "chai": "^4.1.1",
     "mocha": "^3.5.0",
     "ts-node": "^3.3.0",
     "typescript": "^2.4.2"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register test/testAssembler.ts"
+    "test": "mocha -r ts-node/register test/*.ts"
   }
 }
