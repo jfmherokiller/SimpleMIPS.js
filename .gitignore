@@ -1,9 +1,5 @@
 /.idea
 node_modules/*
-Refactor/src/*.js
-Refactor/src/*.js.map
-Refactor/src/Instructions/*.js
-Refactor/src/Instructions/*.js.map
-Refactor/*.js
-Refactor/*.js.map
+Refactor/**/*.js
+Refactor/**/*.js.map
 **/.DS_Store
