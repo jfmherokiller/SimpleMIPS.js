@@ -10,6 +10,6 @@
     "typescript": "^2.4.2"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -r ts-node/register test/testAssembler.ts"
   }
 }
