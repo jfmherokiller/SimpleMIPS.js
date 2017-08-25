@@ -1,5 +1,7 @@
+import {TokenNode} from "./TokenNode";
+
 export class TokenList {
-    _list;
+    private _list:TokenNode[];
 
     constructor() {
         this._list = [];
@@ -83,7 +85,7 @@ export class TokenList {
     // eg. 12, 23, 23
     // return an Array of list items
     expectList(eleType, sepType) {
-        var result = [],
+        let result = [],
             cur = this.expect(eleType);
         if (cur) {
             result.push(cur.value);

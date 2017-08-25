@@ -2,10 +2,6 @@ export class TokenNode {
     type;
     value;
     offset;
-    addr;
-    line;
-    size;
-    data;
 
     constructor(type) {
         this.type = type;
@@ -13,3 +9,6 @@ export class TokenNode {
         this.offset = undefined;
     }
 }
+export {InstructionNode} from "./InstructionNode";
+export {ParserNode} from "./ParserNode";
+export {DataNode} from "./DataNode";

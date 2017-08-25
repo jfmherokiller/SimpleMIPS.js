@@ -1,13 +1,14 @@
 import {Lib} from "./Lib";
 import {TokenList} from "./TokenList";
-import {TokenNode} from "./TokenNode";
+import {TokenNode, ParserNode,DataNode,InstructionNode} from "./TokenNode";
 import {Instructions} from "./Instructions/Instructions";
 import {PseudoInstructions} from "./Instructions/PseudoInstructions";
 import {regexObject, TOKEN_TYPES} from "./Tokenizer";
+export enum NODE_TYPE {DATA = 0, TEXT = 1}
 
 export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii'.split(' ');
-    static NODE_TYPE = {DATA: 0, TEXT: 1};
+
     static INST_SIZE = 4;
     regexObject;
     InstructionClasses;
@@ -298,7 +299,7 @@ export class Assembler {
             for (let i = 0; i < this.regexObject.tokenTypeCount; i++) {
                 matches = line.match(this.regexObject.tokenRegexps[i]);
                 if (matches && matches[0]) {
-                    newNode = new TokenNode(i);
+                    newNode = new ParserNode(i);
                     switch (i) {
                         case TOKEN_TYPES.STRING:
                             // preserve original case for string
@@ -431,9 +432,7 @@ export class Assembler {
         let unitSize;
         let newSize;
         let newData;
-        let result = new TokenNode(Assembler.NODE_TYPE.DATA);
-        result.line = lineno;
-        result.addr = curAddr;
+        let result = new DataNode(lineno,curAddr);
         if (type == '.space') {
             // allocate new space, no specific data needed
             curToken = tokenList.expect(TOKEN_TYPES.INTEGER);
@@ -509,18 +508,12 @@ export class Assembler {
 
     // create an instruction node for future translation
     createInstructionNode(tokenList, instName, curAddr, lineno) {
-        let result = { // node template
-            type: Assembler.NODE_TYPE.TEXT,
-            inst: instName,
-            addr: curAddr,
-            size: Assembler.INST_SIZE,
-            rs: undefined,
-            rd: undefined,
-            rt: undefined,
-            imm: undefined,
-            line: lineno
-        }, expectedTokens, tmp, type, i;
+        let expectedTokens;
+        let tmp;
+        let type;
+        let i;
         type = -1;
+        let result = new InstructionNode(instName,curAddr,Assembler.INST_SIZE,lineno);
         // get instruction format type
         for (i = 0; i < this.InstructionTypes.INST_TYPE_COUNT; i++) {
             if (this.InstructionTypes.INST_TYPE_OPS[i].indexOf(instName) >= 0) {
@@ -756,11 +749,11 @@ export class Assembler {
             if (curToken) {
                 // consume white space
                 tokens.expect(TOKEN_TYPES.SPACE);
-                if(curToken.value == '.globl') {
+                if (curToken.value == '.globl') {
                     //consume the globl token in a noop
                     tokens.expect(TOKEN_TYPES.SPACE);
                     tokens.expect(TOKEN_TYPES.WORD);
-                }else if (curToken.value == '.data' || curToken.value === '.kdata') {
+                } else if (curToken.value == '.data' || curToken.value === '.kdata') {
                     // change to data section
                     status.section = 'data';
                 } else if (curToken.value == '.text' || curToken.value === '.ktext') {
@@ -854,7 +847,7 @@ export class Assembler {
             needHigh16Bits, needLow16Bits;
         for (i = 0; i < n; i++) {
             cur = list[i];
-            if (cur.type == Assembler.NODE_TYPE.DATA) continue;
+            if (cur.type == NODE_TYPE.DATA) continue;
             if (typeof(cur.rt) == 'string') {
                 cur.rt = this.convertRegName(cur.rt);
             }
@@ -907,7 +900,7 @@ export class Assembler {
         let n = list.length, i, j, k, cur, si, ei;
         for (i = 0; i < n; i++) {
             cur = list[i];
-            if (cur.type == Assembler.NODE_TYPE.DATA) {
+            if (cur.type == NODE_TYPE.DATA) {
                 if (cur.data) {
                     // copy data
                     si = (cur.addr - statusTable.dataStartAddr) >> 2;
@@ -936,7 +929,7 @@ export class Assembler {
             ret = [];
         for (i = 0; i < n; i++) {
             let cur = list[i];
-            if (cur.type == Assembler.NODE_TYPE.TEXT) {
+            if (cur.type == NODE_TYPE.TEXT) {
                 ret[(cur.addr - statusTable.textStartAddr) >> 2] = cur.line;
             }
         }
