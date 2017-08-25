@@ -1,7 +1,8 @@
-import {TokenNode,ParserNode,DataNode,InstructionNode} from "./TokenNode";
+import {ParserNode,DataNode,InstructionNode} from "./TokenNode";
+import {TOKEN_TYPE} from "./Tokenizer";
 
 export class TokenList {
-    private _list:(TokenNode|ParserNode|DataNode|InstructionNode)[];
+    private _list:(ParserNode|DataNode|InstructionNode)[];
 
     constructor() {
         this._list = [];
@@ -28,11 +29,11 @@ export class TokenList {
     // return matching tokens
     // if keep is true, only return true/false
     // and tokens are not consumed
-    expect(expectedTypes, keep = false) {
+    expect(expectedTypes:(TOKEN_TYPE|TOKEN_TYPE[]), keep = false) {
         let result;
         if (expectedTypes instanceof Array) {
-            let match = (this._list.length != 0);
-            let cur;
+            let match = (this.getLength() != 0);
+            let cur:TOKEN_TYPE;
             let optionalOK;
             let n = expectedTypes.length;
             // list too short, no need to compare
@@ -78,7 +79,7 @@ export class TokenList {
     // expect a constant list
     // eg. 12, 23, 23
     // return an Array of list items
-    expectList(eleType, sepType) {
+    expectList(eleType:TOKEN_TYPE, sepType:TOKEN_TYPE) {
         let result = [];
         let cur = this.expect(eleType);
         if (cur) {

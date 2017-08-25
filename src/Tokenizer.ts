@@ -1,4 +1,4 @@
-export const enum TOKEN_TYPES {
+export const enum TOKEN_TYPE {
     SPECIAL,
     LABEL,
     STRING,
@@ -15,22 +15,22 @@ export class regexObject {
     tokenTypeNames: string[] = [];
     tokenTypeCount: number = 0;
 
-    addRegexLine(type: TOKEN_TYPES, regex: RegExp) {
+    addRegexLine(type: TOKEN_TYPE, regex: RegExp) {
         this.tokenTypeNames.push(type.toString());
         this.tokenRegexps.push(regex);
         this.tokenTypeCount++;
     }
 
     constructor() {
-        this.addRegexLine(TOKEN_TYPES.SPECIAL, /^\.\w+/);
-        this.addRegexLine(TOKEN_TYPES.LABEL, /^(\w+):/);
-        this.addRegexLine(TOKEN_TYPES.STRING, /^"(([^\\"]|\\.)*)"/);
-        this.addRegexLine(TOKEN_TYPES.COMMA, /^\s*,\s*/);
-        this.addRegexLine(TOKEN_TYPES.SPACE, /^\s+/);
-        this.addRegexLine(TOKEN_TYPES.REGOPR, /^(\$\w{1,2}|zero)/);
+        this.addRegexLine(TOKEN_TYPE.SPECIAL, /^\.\w+/);
+        this.addRegexLine(TOKEN_TYPE.LABEL, /^(\w+):/);
+        this.addRegexLine(TOKEN_TYPE.STRING, /^"(([^\\"]|\\.)*)"/);
+        this.addRegexLine(TOKEN_TYPE.COMMA, /^\s*,\s*/);
+        this.addRegexLine(TOKEN_TYPE.SPACE, /^\s+/);
+        this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$\w{1,2}|zero)/);
         // char is also integer
-        this.addRegexLine(TOKEN_TYPES.COMOPR, /^(-*\d*)\((\$\w{1,2}|zero)\)/);
-        this.addRegexLine(TOKEN_TYPES.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/);
-        this.addRegexLine(TOKEN_TYPES.WORD, /^(\w+)(?!:)/);
+        this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-*\d*)\((\$\w{1,2}|zero)\)/);
+        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/);
+        this.addRegexLine(TOKEN_TYPE.WORD, /^(\w+)(?!:)/);
     }
 }

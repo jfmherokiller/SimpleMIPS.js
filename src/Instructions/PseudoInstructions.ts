@@ -1,6 +1,6 @@
 
 import {Lib} from "../Lib";
-import {TOKEN_TYPES} from "../Tokenizer";
+import {TOKEN_TYPE} from "../Tokenizer";
 export class PseudoInstructions {
     PI_NAMES = [];
     PI_EXPECTS = [];
@@ -33,19 +33,19 @@ export class PseudoInstructions {
          */
         // load address : la $rn, label
         this.addPseudoInstruction("la",
-            [TOKEN_TYPES.REGOPR, TOKEN_TYPES.COMMA, TOKEN_TYPES.WORD],
+            [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.WORD],
             ('lui $r1,__h16__{2} ' + 'ori {0},$r1,__l16__{2}'));
         // load immediate : li $rn, imm32
         this.addPseudoInstruction("li",
-            [TOKEN_TYPES.REGOPR, TOKEN_TYPES.COMMA, TOKEN_TYPES.INTEGER],
+            [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.INTEGER],
             ('lui $r1,{2.H} ' + 'ori {0},$r1,{2.L}'));
         // push register : pushr $rn
         this.addPseudoInstruction("pushr",
-            [TOKEN_TYPES.REGOPR],
+            [TOKEN_TYPE.REGOPR],
             ('sw {0},0($sp)' + 'addi $sp,$sp,-4'));
         // pop to register : pushr $rn
         this.addPseudoInstruction("popr",
-            [TOKEN_TYPES.REGOPR],
+            [TOKEN_TYPE.REGOPR],
             ('lw {0},4($sp)' + 'addi $sp,$sp,4'));
     }
 }
