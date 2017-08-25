@@ -33,7 +33,7 @@ export class TokenList {
         let result;
         if (expectedTypes instanceof Array) {
             let match = (this.getLength() != 0);
-            let cur:TOKEN_TYPE;
+            let cur;
             let optionalOK;
             let n = expectedTypes.length;
             // list too short, no need to compare
