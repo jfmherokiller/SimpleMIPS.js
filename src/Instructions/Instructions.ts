@@ -45,6 +45,7 @@ export class Instructions {
         'srav': ['0000 00ss ssst tttt dddd d000 0000 0111', 'RRR', 'N'], // $d=$t>>($s&0x1f) arithmetic
         // jmp (HAVE DELAY SLOTS)
         'j': ['0000 10ii iiii iiii iiii iiii iiii iiii', 'I', 'U'], // imm<<2 specify low bits of pc
+        'jal':['0000 11ii iiii iiii iiii iiii iiii iiii','I','U'], // $31=pc+4; imm<<2 specify low bits of pc
         'jr': ['0000 00ss sss0 0000 0000 0000 0000 1000', 'RS', 'N'], // pc=$s
         // branch (HAVE DELAY SLOTS)
         'beq': ['0001 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s=$t

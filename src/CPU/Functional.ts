@@ -190,6 +190,14 @@ export class FunctionalCPU extends CPUInternal {
                 nextPC = tmp;
                 hasDelaySlot = true;
                 break;
+            case 3: // JAL imm
+                tmp = this.pc;
+                r[REGISTERS.$RA] = this.pc +4;
+                tmp = (tmp & 0xf0000000) | ((inst & 0x03ffffff) << 2);
+                if (tmp < 0) tmp = tmp + 4294967296;
+                nextPC = tmp;
+                hasDelaySlot = true;
+                break;
             case 4: // beq rs, rt, offset
                 if (r[rs] == r[rt]) {
                     nextPC = this.pc + (imms << 2);
