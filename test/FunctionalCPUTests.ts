@@ -58,6 +58,7 @@ lw $t0, 4($sp)
 jr $ra
 add $ra, $r0, $t0 # delay slot
 nop
+break
 `;
 
 describe("Functional CPU Testing",function () {
