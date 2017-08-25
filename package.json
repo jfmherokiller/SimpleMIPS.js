@@ -33,7 +33,8 @@
   },
   "exclude": [
     "**/*.d.ts",
-    "old"
+    "old",
+    "test"
   ],
   "all": true
 }
