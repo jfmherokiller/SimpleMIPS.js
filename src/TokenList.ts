@@ -15,10 +15,6 @@ export class TokenList {
         return this._list;
     }
 
-    get(n) {
-        return this._list[n];
-    }
-
     push(...items) {
         return this._list.push(items[0]);
     }
