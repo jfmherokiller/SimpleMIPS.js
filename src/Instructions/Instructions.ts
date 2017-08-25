@@ -45,7 +45,7 @@ export class Instructions {
         'srav': ['0000 00ss ssst tttt dddd d000 0000 0111', 'RRR', 'N'], // $d=$t>>($s&0x1f) arithmetic
         // jmp (HAVE DELAY SLOTS)
         'j': ['0000 10ii iiii iiii iiii iiii iiii iiii', 'I', 'U'], // imm<<2 specify low bits of pc
-        'jal':['0000 11ii iiii iiii iiii iiii iiii iiii','I','U'], // $31=pc+4; imm<<2 specify low bits of pc
+        'jal': ['0000 11ii iiii iiii iiii iiii iiii iiii', 'I', 'U'], // $31=pc+4; imm<<2 specify low bits of pc
         'jr': ['0000 00ss sss0 0000 0000 0000 0000 1000', 'RS', 'N'], // pc=$s
         // branch (HAVE DELAY SLOTS)
         'beq': ['0001 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s=$t
@@ -59,6 +59,7 @@ export class Instructions {
 
         // misc
         'nop': ['0000 0000 0000 0000 0000 0000 0000 0000', 'N', 'N'], // no op
+        'ssnop': ['0000 0000 0000 0000 0000 0000 0100 0000', 'N', 'N'], // no op
         'break': ['0000 00cc cccc cccc cccc cccc cc00 1101', 'N', 'N'], // break
         'print': ['1111 11ss sss0 0000 0000 0000 0000 0000', 'RS', 'N'], // print $s simulation
         'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'RS', 'N'], // print mem[$s] simulation
