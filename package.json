@@ -1,7 +1,9 @@
 {
   "name": "mips_assembler",
   "version": "1.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "reinstall": "^2.0.0"
+  },
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
@@ -15,12 +17,22 @@
     "typescript": "^2.4.2"
   },
   "scripts": {
-    "test": "mocha --compilers ts:ts-node/register test/**/*.ts",
-    "coverage": "nyc -x \"**/*.spec.ts\" -x \"**/*.d.ts\" --extension \"*.ts\" npm test && nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "test": "nyc mocha",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/jfmherokiller/SimpleMIPS.js.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".js"
+    ]
+  },
+  "exclude": [
+    "**/*.d.ts"
+  ],
+  "all": true
 }
