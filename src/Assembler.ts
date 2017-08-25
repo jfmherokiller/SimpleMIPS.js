@@ -1,9 +1,10 @@
 import {Lib} from "./Lib";
 import {TokenList} from "./TokenList";
-import {ParserNode,DataNode,InstructionNode} from "./TokenNode";
+import {ParserNode, DataNode, InstructionNode} from "./TokenNode";
 import {Instructions} from "./Instructions/Instructions";
 import {PseudoInstructions} from "./Instructions/PseudoInstructions";
 import {regexObject, TOKEN_TYPE} from "./Tokenizer";
+
 export enum NODE_TYPE {DATA = 0, TEXT = 1}
 
 export class Assembler {
@@ -427,12 +428,12 @@ export class Assembler {
 
     // create a data node for future translation
     // alignment is automatically enforced
-    static createDataNode(tokenList:TokenList, type, curAddr, lineno) {
+    static createDataNode(tokenList: TokenList, type, curAddr, lineno) {
         let curToken;
         let unitSize;
         let newSize;
         let newData;
-        let result = new DataNode(lineno,curAddr);
+        let result = new DataNode(lineno, curAddr);
         if (type == '.space') {
             // allocate new space, no specific data needed
             curToken = tokenList.expect(TOKEN_TYPE.INTEGER);
@@ -513,7 +514,7 @@ export class Assembler {
         let type;
         let i;
         type = -1;
-        let result = new InstructionNode(instName,curAddr,Assembler.INST_SIZE,lineno);
+        let result = new InstructionNode(instName, curAddr, Assembler.INST_SIZE, lineno);
         // get instruction format type
         for (i = 0; i < this.InstructionTypes.INST_TYPE_COUNT; i++) {
             if (this.InstructionTypes.INST_TYPE_OPS[i].indexOf(instName) >= 0) {
@@ -724,9 +725,20 @@ export class Assembler {
     //  when text include inst, rs, rd, rt, imm
     // }
     parseLine(tokens, lineno, symbols, status) {
-        let relAddr = 0, curToken, i, flag, tokenRecognized,
-            curLine, rs, rt, rd, inst, func, idx,
-            tmp, result = [];
+        let relAddr = 0;
+        let curToken;
+        let i;
+        let flag;
+        let tokenRecognized;
+        let curLine;
+        let rs;
+        let rt;
+        let rd;
+        let inst;
+        let func;
+        let idx;
+        let tmp;
+        let result = [];
         while (tokens.getLength() > 0) {
             // consume white space
             tokens.expect(TOKEN_TYPE.SPACE);
@@ -818,11 +830,10 @@ export class Assembler {
         return result;
     }
 
-    regAliases = ('zero $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
+    regAliases = ('$zero $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
         '$t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 ' +
         '$s0 $s1 $s2 $s3 $s4 $s5 $s6 $s7 ' +
         '$t8 $t9 $k0 $k1 $gp $sp $fp $ra').split(' ');
-
     convertRegName(regname) {
         // GPRs only
         let idx;
@@ -897,25 +908,23 @@ export class Assembler {
 
     // translate into machine code
     translate(list, text, data, statusTable) {
-        let j;
-        let k;
         let startIndex;
         let endIndex;
         for (let i = 0; i < list.length; i++) {
-            let currentToken:(DataNode|InstructionNode) = list[i];
+            let currentToken: (DataNode | InstructionNode) = list[i];
             if (currentToken instanceof DataNode) {
                 if (currentToken.data) {
                     // copy data
                     startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
                     endIndex = startIndex + (currentToken.size >> 2);
-                    for (j = startIndex, k = 0; j < endIndex; j++, k++) {
+                    for (let k = 0, j = startIndex; j < endIndex; j++, k++) {
                         data[j] = currentToken.data[k];
                     }
                 } else {
                     // other wise fill with zeros
                     startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
                     endIndex = startIndex + (currentToken.size >> 2);
-                    for (j = startIndex; j < endIndex; j++) {
+                    for (let j = startIndex; j < endIndex; j++) {
                         data[j] = 0;
                     }
                 }
@@ -928,16 +937,14 @@ export class Assembler {
 
     // generate source map
     static generateSourceMap(list, statusTable) {
-        let n = list.length, i,
-            ret = [];
-        for (i = 0; i < n; i++) {
+        let ListOfLineNumbers: number[] = [];
+        for (let i = 0; i < list.length; i++) {
             let cur = list[i];
-            if (cur instanceof InstructionNode)
-            {
-                ret[(cur.addr - statusTable.textStartAddr) >> 2] = cur.line;
+            if (cur instanceof InstructionNode) {
+                ListOfLineNumbers[(cur.addr - statusTable.textStartAddr) >> 2] = cur.line;
             }
         }
-        return ret;
+        return ListOfLineNumbers;
     }
 
 
