@@ -33,51 +33,55 @@ nop
 # convert to upper case
 # $a0 - address of the string
 convert:
-loop:
-# get byte
-lb $t0, 0($a0)
-andi $t0, $t0, 0xff
-beq $t0, $r0, conv_end
-# check range
-sltiu $t1, $t0, 97
-bne $t1, $r0, conv_next
-nop
-addi $t1, $t0, -123
-slti $t1, $t1, 0
-beq $t1, $r0, conv_next
-nop
-# convert
-addi $t0, $t0, -32
-sb $t0, 0($a0)
-conv_next:
-addi $a0, $a0, 1
-j loop
-nop
-conv_end:
-lw $t0, 4($sp)
-jr $ra
-add $ra, $r0, $t0 # delay slot
-nop
-break
+    loop:
+        # get byte
+        lb $t0, 0($a0)
+        andi $t0, $t0, 0xff
+        beq $t0, $r0, conv_end
+        # check range
+        sltiu $t1, $t0, 97
+        bne $t1, $r0, conv_next
+        nop
+        addi $t1, $t0, -123
+        slti $t1, $t1, 0
+        beq $t1, $r0, conv_next
+        nop
+        # convert
+        addi $t0, $t0, -32
+        sb $t0, 0($a0)
+    conv_next:
+        addi $a0, $a0, 1
+        j loop
+        nop
+    conv_end:
+        lw $t0, 4($sp)
+        jr $ra
+        add $ra, $r0, $t0 # delay slot
+        nop
+
 `;
 
 describe("Functional CPU Testing",function () {
-    it("hello world testing",function () {
-        let assembler = new Assembler();
-        let mem = new Memory();
-        let cpu = new FunctionalCPU(mem);
-        let exCode = EXCEPTION_CODE;
+    let assembler;
+    let mem;
+    let cpu;
+    before("Setup CPU/Memory and register events",function () {
+        assembler = new Assembler();
+        mem = new Memory();
+        cpu = new FunctionalCPU(mem);
         registerEvents(cpu);
+    });
+    it("hello world testing",function () {
+
         let assembleres = assembler.assemble(helloworld_code);
         mem.importAsm(assembleres);
         cpu.reset();
-        console.log(assembleres);
-        Runcpu(cpu,exCode);
+        Runcpu(cpu);
     });
 
 });
 
-function Runcpu(cpu,excode) {
+function Runcpu(cpu) {
     for (let i = 0; i < 12500; i++) {
         let exception =cpu.step();
         if(exception === EXCEPTION_CODE.BREAK)
