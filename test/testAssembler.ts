@@ -37,6 +37,12 @@ let memoryaccess_opcodelist:opcodeObject[] = [
 
 ];
 describe("Assembler Tests",function () {
+    describe("Assembler initialization",function () {
+        it("should not be a null object",function () {
+            let assembler = new Assembler();
+            assert.isNotNull(assembler);
+        });
+    });
     describe("Memory Access Opcodes",function () {
         memoryaccess_opcodelist.forEach(function (opcode) {
             it('correctly assembles the opcode ' + opcode.instruction, function() {

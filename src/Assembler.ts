@@ -295,7 +295,7 @@ export class Assembler {
         let newNode;
         while (line.length > 0) {
             flag = false;
-            for (var i = 0; i < this.regexObject.tokenTypeCount; i++) {
+            for (let i = 0; i < this.regexObject.tokenTypeCount; i++) {
                 matches = line.match(this.regexObject.tokenRegexps[i]);
                 if (matches && matches[0]) {
                     newNode = new TokenNode(i);
