@@ -60,6 +60,7 @@ export class Instructions {
         // misc
         'nop': ['0000 0000 0000 0000 0000 0000 0000 0000', 'N', 'N'], // no op
         'ssnop': ['0000 0000 0000 0000 0000 0000 0100 0000', 'N', 'N'], // no op
+        'sdbbp': ['0111 00cc cccc cccc cccc cccc cc11 1111', 'N', 'N'], //software debug breakpoint
         'break': ['0000 00cc cccc cccc cccc cccc cc00 1101', 'N', 'N'], // break
         'print': ['1111 11ss sss0 0000 0000 0000 0000 0000', 'RS', 'N'], // print $s simulation
         'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'RS', 'N'], // print mem[$s] simulation
