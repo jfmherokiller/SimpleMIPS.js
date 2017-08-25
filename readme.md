@@ -3,6 +3,7 @@ Simple MIPS Simulator in JavaScript (Experimental)
 <!---
 This is an experimental project after taking the computer architecture course during my undergraduate study. Basically it provides a basic playground for MIPS assembly. However, only a limited set of instructions are available due to limited time:
 -->
+[![codecov](https://codecov.io/gh/jfmherokiller/SimpleMIPS.js/branch/master/graph/badge.svg)](https://codecov.io/gh/jfmherokiller/SimpleMIPS.js)
 
 List of Currently Implemented instructions:
 - **Memory access**: lb, lbu, lh, lhu, lui, lw, sb, sh, sw, mfhi, mflo, mthi, mtlo
