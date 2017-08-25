@@ -2,8 +2,7 @@ import {Assembler} from '../src/Assembler';
 import 'mocha';
 import {assert} from "chai";
 import {Lib} from "../src/Lib";
-import {EXCEPTION_CODE} from "../src/CPU";
-import {FunctionalCPU} from "../src/CPU/Functional";
+import {EXCEPTION_CODE,FunctionalCPU} from "../src/CPU";
 import {Memory} from "../src/Memory";
 import {readFileSync} from "fs";
 
