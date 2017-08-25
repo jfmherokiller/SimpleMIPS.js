@@ -3,3 +3,8 @@ node_modules/*
 **/*.js
 **/*.js.map
 **/.DS_Store
+
+# Coverage directory used by tools like istanbul
+coverage
+.nyc_output
+coverage.*
