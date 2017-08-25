@@ -32,7 +32,8 @@
     ]
   },
   "exclude": [
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "old"
   ],
   "all": true
 }
