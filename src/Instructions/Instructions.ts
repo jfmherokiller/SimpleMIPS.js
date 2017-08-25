@@ -139,7 +139,9 @@ class CPUInstrclass {
         }
         this.CreateTranslators(cur);
     }
+    private TranslateInstruction(cur) {
 
+    }
     private CreateTranslators(cur) {
 // build translators
         let translators = {}, funcBody,

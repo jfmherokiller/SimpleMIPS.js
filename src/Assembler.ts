@@ -427,7 +427,7 @@ export class Assembler {
 
     // create a data node for future translation
     // alignment is automatically enforced
-    static createDataNode(tokenList, type, curAddr, lineno) {
+    static createDataNode(tokenList:TokenList, type, curAddr, lineno) {
         let curToken;
         let unitSize;
         let newSize;
@@ -897,28 +897,31 @@ export class Assembler {
 
     // translate into machine code
     translate(list, text, data, statusTable) {
-        let n = list.length, i, j, k, cur, si, ei;
-        for (i = 0; i < n; i++) {
-            cur = list[i];
-            if (cur.type == NODE_TYPE.DATA) {
-                if (cur.data) {
+        let j;
+        let k;
+        let startIndex;
+        let endIndex;
+        for (let i = 0; i < list.length; i++) {
+            let currentToken:(DataNode|InstructionNode) = list[i];
+            if (currentToken instanceof DataNode) {
+                if (currentToken.data) {
                     // copy data
-                    si = (cur.addr - statusTable.dataStartAddr) >> 2;
-                    ei = si + (cur.size >> 2);
-                    for (j = si, k = 0; j < ei; j++, k++) {
-                        data[j] = cur.data[k];
+                    startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
+                    endIndex = startIndex + (currentToken.size >> 2);
+                    for (j = startIndex, k = 0; j < endIndex; j++, k++) {
+                        data[j] = currentToken.data[k];
                     }
                 } else {
                     // other wise fill with zeros
-                    si = (cur.addr - statusTable.dataStartAddr) >> 2;
-                    ei = si + (cur.size >> 2);
-                    for (j = si; j < ei; j++) {
+                    startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
+                    endIndex = startIndex + (currentToken.size >> 2);
+                    for (j = startIndex; j < endIndex; j++) {
                         data[j] = 0;
                     }
                 }
             } else {
-                si = (cur.addr - statusTable.textStartAddr) >> 2;
-                text[si] = this.InstructionClasses.translators[cur.inst](cur);
+                startIndex = (currentToken.addr - statusTable.textStartAddr) >> 2;
+                text[startIndex] = this.InstructionClasses.translators[currentToken.inst](currentToken);
             }
         }
     }

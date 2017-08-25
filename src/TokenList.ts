@@ -1,7 +1,7 @@
-import {TokenNode} from "./TokenNode";
+import {TokenNode,ParserNode,DataNode,InstructionNode} from "./TokenNode";
 
 export class TokenList {
-    private _list:TokenNode[];
+    private _list:(TokenNode|ParserNode|DataNode|InstructionNode)[];
 
     constructor() {
         this._list = [];
@@ -69,13 +69,11 @@ export class TokenList {
                     result = this._list.splice(0, n);
                 }
             }
-        } else {
-            if (this._list[0] && this._list[0].type == expectedTypes) {
-                if (keep) {
-                    result = true;
-                } else {
-                    result = this._list.splice(0, 1)[0];
-                }
+        } else if (this._list[0] && this._list[0].type == expectedTypes) {
+            if (keep) {
+                result = true;
+            } else {
+                result = this._list.splice(0, 1)[0];
             }
         }
         return result;
@@ -85,8 +83,8 @@ export class TokenList {
     // eg. 12, 23, 23
     // return an Array of list items
     expectList(eleType, sepType) {
-        let result = [],
-            cur = this.expect(eleType);
+        let result = [];
+        let cur = this.expect(eleType);
         if (cur) {
             result.push(cur.value);
             while ((cur = this.expect([sepType, eleType])) != undefined) {
