@@ -48,6 +48,7 @@ export class Instructions {
         'jal': ['0000 11ii iiii iiii iiii iiii iiii iiii', 'I', 'U'], // $31=pc+4; imm<<2 specify low bits of pc
         'jr': ['0000 00ss sss0 0000 0000 0000 0000 1000', 'RS', 'N'], // pc=$s
         // branch (HAVE DELAY SLOTS)
+        'bal': ['0000 0100 0001 0001 iiii iiii iiii iiii', 'I', 'S'], // $31=pc+4; pc=pc+sign_ext(imm<<2)
         'beq': ['0001 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s=$t
         'bne': ['0001 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // branch when $s!=$t
         'blez': ['0001 10ss sss0 0000 iiii iiii iiii iiii', 'RSDRTI', 'S'], // if $s<=0 pc=pc+sign_ext(imm<<2)
@@ -139,14 +140,19 @@ class CPUInstrclass {
         }
         this.CreateTranslators(cur);
     }
+
     private TranslateInstruction(cur) {
 
     }
+
     private CreateTranslators(cur) {
 // build translators
-        let translators = {}, funcBody,
-            instCode, funcCode,
-            immStartIdx, immEndIdx, immLength;
+        let translators = {};
+        let funcBody;
+        let funcCode;
+        let immStartIdx;
+        let immEndIdx;
+        let immLength;
         for (let inst in Instructions.instructionTable) {
             funcBody = '';
             let type = Instructions.instructionTable[inst][1];
@@ -155,9 +161,9 @@ class CPUInstrclass {
                 .replace(/a/g, 'i') // a is also i
                 .replace(/-/g, '0')
                 .replace(/ /g, ''); // no need for format
-            instCode = parseInt(cur.slice(0, 6), 2);
-            let rs = cur.slice(6, 11);
-            let rt = cur.slice(11, 16);
+            let instCode = parseInt(cur.slice(0, 6), 2);
+            let rs = parseInt(cur.slice(6, 11),2);
+            let rt = parseInt(cur.slice(11, 16), 2);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
@@ -165,6 +171,9 @@ class CPUInstrclass {
             // rs, rd, rt
             if (cur.indexOf('s') > 0) {
                 funcBody += 'base |= (info.rs << 21);\n';
+            } else {
+                funcBody += `base |= (${rs} << 21);
+`
             }
             if (cur.indexOf('d') > 0) {
                 funcBody += 'base |= (info.rd << 11);\n';
@@ -173,7 +182,7 @@ class CPUInstrclass {
                 funcBody += 'base |= (info.rt << 16);\n';
             }
             if (type === 'RSDRTI') {
-                funcBody += `base |= (${parseInt(rt, 2)} << 16);\n`;
+                funcBody += `base |= (${rt} << 16);\n`;
             }
             // imm
             immStartIdx = cur.indexOf('i');
