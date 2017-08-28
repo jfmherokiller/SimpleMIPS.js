@@ -14,6 +14,8 @@ export class Instructions {
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
         'mtlo': ['0000 00ss sss0 0000 0000 0000 0001 0011', 'RS', 'S'],
+        'mtc0':['0100 0000 100s ssss dddd d000 0000 0iii','RRI','N'], // CPR[0,rd,sel] ← data
+        'mtc1':['0100 0100 100t tttt ssss s000 0000 0000','RR','N'], //move word from rt to float reg fs;fs ← rt
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
