@@ -24,7 +24,7 @@ export class Assembler {
     }
 
 
-    disassemble(inst) {
+    static disassemble(inst) {
         // @todo
         let opcode = (inst & 0xfc000000) >>> 26,
             func = inst & 0x3f,
