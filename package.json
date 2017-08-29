@@ -32,7 +32,8 @@
       "**/*.d.ts",
       "old",
       "test",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "others"
     ],
     "all": true
   }
