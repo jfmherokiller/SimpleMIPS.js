@@ -36,6 +36,5 @@
     "old",
     "test",
     "**/node_modules/**"
-  ],
-  "all": true
+  ]
 }
