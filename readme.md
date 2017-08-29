@@ -9,7 +9,7 @@ List of Currently Implemented instructions:
 - **Memory access**: lb, lbu, lh, lhu, lui, lw, sb, sh, sw, mfhi, mflo, mthi, mtlo
 - **Arithmetic operations**: addi, addiu, add, addu, sub, subu, slt, slti, sltu, sltiu, mult, multu, div, divu
 - **Logical operations**: and, andi, or, ori, xor, xori, nor, sll, sllv, srl, sra, srlv, srav
-- **Jump**: j, jr
+- **Jump**: j, jr,jal,
 - **Conditional branch**: beq, bne, blez, bgtz, bltz, bgez,bltzal,bgezal
 - **Misc/Pseudo instructions**: nop, break, print prints, printm
 <!---
