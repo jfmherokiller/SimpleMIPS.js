@@ -67,11 +67,15 @@ export class FunctionalCPU extends CPUInternal {
                         nextPC = r[rs];
                         hasDelaySlot = true;
                         break;
+                    case 'jalr':
+                        //@ TODO jalr
+                        exception |= EXCEPTION_CODE.INVALID_INST;
+                        break;
                     case 'syscall':
                         //@TODO Syscall
                         exception |= EXCEPTION_CODE.BREAK;
                         break;
-                    case 'break': // break;
+                    case 'mips_break': // mips_break;
                         // @TODO Break
                         exception |= EXCEPTION_CODE.BREAK;
                         break;
@@ -311,7 +315,7 @@ export class FunctionalCPU extends CPUInternal {
                 }
                 break;
             case 'lwl':
-                exception |= EXCEPTION_CODE.INVALID_INST
+                exception |= EXCEPTION_CODE.INVALID_INST;
                 break;
             case 'lw':
                 // lw
@@ -336,7 +340,7 @@ export class FunctionalCPU extends CPUInternal {
                 }
                 break;
             case 'lwr':
-                exception |= EXCEPTION_CODE.INVALID_INST
+                exception |= EXCEPTION_CODE.INVALID_INST;
                 break;
             case 'sb':
                 // sb rt, offset(rs)
@@ -383,7 +387,7 @@ export class FunctionalCPU extends CPUInternal {
                         this.eventBus.post('print', 'r' + rs, 'r', r[rs]);
                         break;
                     case 'printm': // print memory
-                        this.eventBus.post('print', '0x' + Lib.padLeft(r[rs].toString(16), '0', 8), 'm', mem.getByte(r[rs]))
+                        this.eventBus.post('print', '0x' + Lib.padLeft(r[rs].toString(16), '0', 8), 'm', mem.getByte(r[rs]));
                         break;
                     case 'prints': // print string
                         tmp = r[rs];

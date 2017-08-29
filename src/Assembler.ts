@@ -64,7 +64,7 @@ export class Assembler {
                         str = 'jr rs';
                         break;
                     case 13:
-                        str = 'break';
+                        str = 'mips_break';
                         break;
                     //case 16: // mfhi
                     //case 17: // mthi

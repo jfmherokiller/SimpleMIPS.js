@@ -446,7 +446,7 @@ class Pipeline extends CPUInternal {
                             prepareBranch = true;
                             branchTargetSrc = rs;
                             break;
-                        case 13: // break;
+                        case 13: // mips_break;
                             // @TODO Break, current nop
                             exception |= EXCEPTION_CODE.BREAK;
                             break;

@@ -159,7 +159,7 @@ export enum Func {
     jr = Opcodes.Special | 8,
     jalr = Opcodes.Special | 9,
     syscall = Opcodes.Special | 12,
-    break = Opcodes.Special | 13,
+    mips_break = Opcodes.Special | 13,
     mfhi = Opcodes.Special | 16,
     mthi = Opcodes.Special | 17,
     mflo = Opcodes.Special | 18,
