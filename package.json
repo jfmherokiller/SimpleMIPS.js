@@ -34,7 +34,8 @@
   "exclude": [
     "**/*.d.ts",
     "old",
-    "test"
+    "test",
+    "**/node_modules/**"
   ],
   "all": true
 }
