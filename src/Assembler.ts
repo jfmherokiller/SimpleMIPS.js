@@ -26,7 +26,7 @@ export class Assembler {
 
     disassemble(inst) {
         // @todo
-        var opcode = (inst & 0xfc000000) >>> 26,
+        let opcode = (inst & 0xfc000000) >>> 26,
             func = inst & 0x3f,
             rs = (inst & 0x03e00000) >>> 21,
             rt = (inst & 0x001f0000) >>> 16,
@@ -34,7 +34,7 @@ export class Assembler {
             a = (inst & 0x000007c0) >>> 6,
             imm = inst & 0xffff,
             imms = (imm & 0x8000) ? (imm | 0xffff0000) : imm; // sign-extended imm
-        var str;
+        let str;
         switch (opcode) {
             case 0:
                 switch (func) {

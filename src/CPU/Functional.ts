@@ -1,5 +1,5 @@
 import {CPUInternal} from "./CPU";
-import {EXCEPTION_CODE, MAX_PC, REGISTERS} from "./index";
+import {EXCEPTION_CODE, MAX_PC, Opcodes, REGISTERS} from "./index";
 import {Lib} from "../Lib";
 
 
@@ -25,23 +25,23 @@ export class FunctionalCPU extends CPUInternal {
             inst = mem.getWord(this.pc);
         r[0] = 0; // $r0 is always 0
         // decode
-        let tmp = 0,
-            hasDelaySlot = false,
-            nextPC = this.pc + 4,
-            exception = 0,
-            breaking = false,
-            opcode = (inst & 0xfc000000) >>> 26,
-            func = inst & 0x3f,
-            rs = (inst & 0x03e00000) >>> 21,
-            rt = (inst & 0x001f0000) >>> 16,
-            rd = (inst & 0x0000f800) >>> 11,
-            a = (inst & 0x000007c0) >>> 6,
-            imm = inst & 0xffff,
-            imms = (imm & 0x8000) ? (imm | 0xffff0000) : imm; // sign-extended imm
+        let tmp = 0;
+        let hasDelaySlot = false;
+        let nextPC = this.pc + 4;
+        let exception = 0;
+        let breaking = false;
+        let opcode = Opcodes[(inst & 0xfc000000) >>> 26];
+        let func = inst & 0x3f;
+        let rs = (inst & 0x03e00000) >>> 21;
+        let rt = (inst & 0x001f0000) >>> 16;
+        let rd = (inst & 0x0000f800) >>> 11;
+        let a = (inst & 0x000007c0) >>> 6;
+        let imm = inst & 0xffff;
+        let imms = (imm & 0x8000) ? (imm | 0xffff0000) : imm; // sign-extended imm
 
         this.cycle++;
         switch (opcode) {
-            case 0:
+            case 'Special':
                 switch (func) {
                     case 0: // sll rd, rt, sa
                         r[rd] = r[rt] << a;
@@ -151,7 +151,7 @@ export class FunctionalCPU extends CPUInternal {
                         exception |= EXCEPTION_CODE.INVALID_INST;
                 }
                 break;
-            case 1:
+            case 'bcond':
                 switch (rt) {
                     case 0: // bltz rs, offset
                         if ((r[rs] | 0) < 0) {
@@ -183,63 +183,73 @@ export class FunctionalCPU extends CPUInternal {
                         exception |= EXCEPTION_CODE.INVALID_INST;
                 }
                 break;
-            case 2: // J imm
+            case 'jmp':
+                //jmp imm
                 tmp = this.pc;
                 tmp = (tmp & 0xf0000000) | ((inst & 0x03ffffff) << 2);
                 if (tmp < 0) tmp = tmp + 4294967296;
                 nextPC = tmp;
                 hasDelaySlot = true;
                 break;
-            case 3: // JAL imm
+            case 'jal':
+                //jal imm
                 tmp = this.pc;
-                r[REGISTERS.$RA] = this.pc +4;
+                r[REGISTERS.$RA] = this.pc + 4;
                 tmp = (tmp & 0xf0000000) | ((inst & 0x03ffffff) << 2);
                 if (tmp < 0) tmp = tmp + 4294967296;
                 nextPC = tmp;
                 hasDelaySlot = true;
                 break;
-            case 4: // beq rs, rt, offset
+            case 'beq':
+                // beq rs, rt, offset
                 if (r[rs] == r[rt]) {
                     nextPC = this.pc + (imms << 2);
                     hasDelaySlot = true;
                 }
                 break;
-            case 5: // bne rs, rt, offset
+            case 'bne':
+                // bne rs, rt, offset
                 if (r[rs] != r[rt]) {
                     nextPC = this.pc + (imms << 2);
                     hasDelaySlot = true;
                 }
                 break;
-            case 6: // blez rs, offset
+            case 'blez':
+                // blez rs, offset
                 if ((r[rs] | 0) <= 0) {
                     nextPC = this.pc + (imms << 2);
                     hasDelaySlot = true;
                 }
                 break;
-            case 7: // bgtz rs, offset
+            case 'bgtz':
+                // bgtz rs, offset
                 if ((r[rs] | 0) > 0) {
                     nextPC = this.pc + (imms << 2);
                     hasDelaySlot = true;
                 }
                 break;
-            case 8: // addi rt, rs, imm with overflow check
+            case 'addi':
+                // addi rt, rs, imm with overflow check
                 tmp = (r[rs] | 0) + imms;
                 if (tmp > 0x7fffffff || tmp < -0x80000000) {
                     exception |= EXCEPTION_CODE.INT_OVERFLOW;
                 }
                 r[rt] = tmp;
                 break;
-            case 9: // addiu rt, rs, imm
+            case 'addiu':
+                // addiu rt, rs, imm
                 if (imm & 0x8000) {
                     r[rt] = r[rs] + imm + 0xffff0000;
                 } else {
                     r[rt] = r[rs] + imm;
                 }
                 break;
-            case 10: // slti rt, rs, imm
+            case 'slti':
+                // slti rt, rs, imm
                 r[rt] = ((r[rs] | 0) < imms);
                 break;
-            case 11: // sltiu
+            case 'sltiu':
+                // sltiu
                 tmp = imm & 0x7fff;
                 if (imm & 0x8000) {
                     // [max_unsigned-32767, max_unsigned]
@@ -249,19 +259,30 @@ export class FunctionalCPU extends CPUInternal {
                     r[rt] = (r[rs] < tmp);
                 }
                 break;
-            case 12: // andi rt, rs, imm
+            case 'andi':
+                // andi rt, rs, imm
                 r[rt] = r[rs] & imm;
                 break;
-            case 13: // ori rt, rs, imm
+            case 'ori':
+                // ori rt, rs, imm
                 r[rt] = r[rs] | imm;
                 break;
-            case 14: // xori rt, rs, imm
+            case 'xori':
+                // xori rt, rs, imm
                 r[rt] = r[rs] ^ imm;
                 break;
-            case 15: // lui rt, imm
+            case 'lui':
+                // lui rt, imm
                 r[rt] = imm << 16;
                 break;
-            case 32: // lb rt, offset(rs) sign extended
+            case 'cop0':
+            case 'cop1':
+            case 'cop2':
+            case 'cop3':
+                exception |= EXCEPTION_CODE.INVALID_INST;
+                break;
+            case 'lb':
+                // lb rt, offset(rs) sign extended
                 tmp = mem.getByte(r[rs] + imms);
                 if (tmp < 128) {
                     r[rt] = tmp;
@@ -269,7 +290,8 @@ export class FunctionalCPU extends CPUInternal {
                     r[rt] = tmp | 0xffffff00;
                 }
                 break;
-            case 33: // lh rt, offset(rs) sign extended
+            case 'lh':
+                // lh rt, offset(rs) sign extended
                 tmp = r[rs] + imms; // effective address
                 if (tmp & 0x01) {
                     exception |= EXCEPTION_CODE.DATA_ALIGN;
@@ -282,7 +304,11 @@ export class FunctionalCPU extends CPUInternal {
                     }
                 }
                 break;
-            case 35: // lw
+            case 'lwl':
+                exception |= EXCEPTION_CODE.INVALID_INST
+                break;
+            case 'lw':
+                // lw
                 tmp = r[rs] + imms; // effective address
                 if (tmp & 0x03) {
                     exception |= EXCEPTION_CODE.DATA_ALIGN;
@@ -290,10 +316,12 @@ export class FunctionalCPU extends CPUInternal {
                     r[rt] = mem.getWord(tmp);
                 }
                 break;
-            case 36: // lbu rt, offset(rs)
+            case 'lbu':
+                // lbu rt, offset(rs)
                 r[rt] = mem.getByte(r[rt] + imms);
                 break;
-            case 37: // lhu rt, offset(rs)
+            case 'lhu':
+                // lhu rt, offset(rs)
                 tmp = r[rs] + imms; // effective address
                 if (tmp & 0x01) {
                     exception |= EXCEPTION_CODE.DATA_ALIGN;
@@ -301,10 +329,15 @@ export class FunctionalCPU extends CPUInternal {
                     r[rt] = mem.getHalfword(tmp);
                 }
                 break;
-            case 40: // sb rt, offset(rs)
+            case 'lwr':
+                exception |= EXCEPTION_CODE.INVALID_INST
+                break;
+            case 'sb':
+                // sb rt, offset(rs)
                 mem.setByte(r[rs] + imms, r[rt] & 0xff);
                 break;
-            case 41: // sh rt, offset(rs)
+            case 'sh':
+                // sh rt, offset(rs)
                 tmp = r[rs] + imms;
                 if (tmp & 0x01) {
                     exception |= EXCEPTION_CODE.DATA_ALIGN;
@@ -312,7 +345,11 @@ export class FunctionalCPU extends CPUInternal {
                     mem.setHalfword(tmp, r[rt] & 0xffff);
                 }
                 break;
-            case 43: // sw rt, offset(rs)
+            case 'swl':
+                exception |= EXCEPTION_CODE.INVALID_INST;
+                break;
+            case 'sw':
+                // sw rt, offset(rs)
                 tmp = r[rs] + imms;
                 if (tmp & 0x03) {
                     exception |= EXCEPTION_CODE.DATA_ALIGN;
@@ -320,7 +357,21 @@ export class FunctionalCPU extends CPUInternal {
                     mem.setWord(tmp, r[rt]);
                 }
                 break;
-            case 63: // simulator special
+            case 'swr':
+            case 'lwc0':
+            case 'lwc1':
+            case 'lwc2':
+            case 'lwc3':
+            case 'swc0':
+            case 'swc1':
+            case 'swc2':
+                exception |= EXCEPTION_CODE.INVALID_INST;
+                break;
+            case 'swc3':
+                exception |= EXCEPTION_CODE.INVALID_INST;
+                break;
+            case 'SimSpecial':
+                // simulator special
                 switch (func) {
                     case 0: // print register
                         this.eventBus.post('print', 'r' + rs, 'r', r[rs]);
@@ -343,7 +394,6 @@ export class FunctionalCPU extends CPUInternal {
             default:
                 exception |= EXCEPTION_CODE.INVALID_INST;
         }
-
         // exec pending branch
         if (this.branchTarget) {
             this.pc = this.branchTarget;
