@@ -68,7 +68,9 @@ export class Instructions {
         'break': ['0000 00cc cccc cccc cccc cccc cc00 1101', 'N', 'N'], // break
         'print': ['1111 11ss sss0 0000 0000 0000 0000 0000', 'RS', 'N'], // print $s simulation
         'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'RS', 'N'], // print mem[$s] simulation
-        'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N']  // print string@$s
+        'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
+        // floating point stuff
+        // @TODO
     };
 
     static MakeCPUInstructionClasses() {
