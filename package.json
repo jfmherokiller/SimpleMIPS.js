@@ -1,9 +1,7 @@
 {
   "name": "mips_assembler",
   "version": "1.0.0",
-  "dependencies": {
-    "reinstall": "^2.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
@@ -29,12 +27,13 @@
     "extension": [
       ".ts",
       ".js"
-    ]
-  },
-  "exclude": [
-    "**/*.d.ts",
-    "old",
-    "test",
-    "**/node_modules/**"
-  ]
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "old",
+      "test",
+      "**/node_modules/**"
+    ],
+    "all": true
+  }
 }
