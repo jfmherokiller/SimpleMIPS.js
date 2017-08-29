@@ -104,11 +104,12 @@ export enum REGISTERS {
     $HI = 32,
     $LO = 33
 }
+
 export enum Opcodes {
     Special = 0,
     bcond = 1,
-    jmp =2,
-    jal =3,
+    jmp = 2,
+    jal = 3,
     beq = 4,
     bne = 5,
     blez = 6,
@@ -129,8 +130,8 @@ export enum Opcodes {
     lh = 33,
     lwl = 34,
     lw = 35,
-    lbu =36,
-    lhu =37,
+    lbu = 36,
+    lhu = 37,
     lwr = 38,
     sb = 40,
     sh = 41,
@@ -147,4 +148,40 @@ export enum Opcodes {
     swc3 = 59,
     SimSpecial = 63
 }
+
+export enum Func {
+    sll = Opcodes.Special | 0,
+    srl = Opcodes.Special | 2,
+    sra = Opcodes.Special | 3,
+    sllv = Opcodes.Special | 4,
+    srlv = Opcodes.Special | 6,
+    srav = Opcodes.Special | 7,
+    jr = Opcodes.Special | 8,
+    jalr = Opcodes.Special | 9,
+    syscall = Opcodes.Special | 12,
+    break = Opcodes.Special | 13,
+    mfhi = Opcodes.Special | 16,
+    mthi = Opcodes.Special | 17,
+    mflo = Opcodes.Special | 18,
+    mtlo = Opcodes.Special | 19,
+    mult = Opcodes.Special | 24,
+    multu = Opcodes.Special | 25,
+    div = Opcodes.Special | 26,
+    divu = Opcodes.Special | 27,
+    add = Opcodes.Special | 32,
+    addu = Opcodes.Special | 33,
+    sub = Opcodes.Special | 34,
+    subu = Opcodes.Special | 35,
+    and = Opcodes.Special | 36,
+    or = Opcodes.Special | 37,
+    xor = Opcodes.Special | 38,
+    nor = Opcodes.Special | 39,
+    slt = Opcodes.Special | 42,
+    sltu = Opcodes.Special | 43,
+    printr = Opcodes.SimSpecial | 0,
+    printm = Opcodes.SimSpecial | 1,
+    prints = Opcodes.SimSpecial | 2,
+
+}
+
 export {FunctionalCPU} from "./Functional"

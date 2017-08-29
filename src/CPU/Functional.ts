@@ -1,5 +1,5 @@
 import {CPUInternal} from "./CPU";
-import {EXCEPTION_CODE, MAX_PC, Opcodes, REGISTERS} from "./index";
+import {EXCEPTION_CODE, Func, MAX_PC, Opcodes, REGISTERS} from "./index";
 import {Lib} from "../Lib";
 
 
@@ -30,8 +30,10 @@ export class FunctionalCPU extends CPUInternal {
         let nextPC = this.pc + 4;
         let exception = 0;
         let breaking = false;
-        let opcode = Opcodes[(inst & 0xfc000000) >>> 26];
-        let func = inst & 0x3f;
+        let opcode_num = (inst & 0xfc000000) >>> 26;
+        let opcodeName = Opcodes[opcode_num];
+        let func_num = inst & 0x3f;
+        let funcName = Func[opcode_num | func_num];
         let rs = (inst & 0x03e00000) >>> 21;
         let rt = (inst & 0x001f0000) >>> 16;
         let rd = (inst & 0x0000f800) >>> 11;
@@ -40,50 +42,54 @@ export class FunctionalCPU extends CPUInternal {
         let imms = (imm & 0x8000) ? (imm | 0xffff0000) : imm; // sign-extended imm
 
         this.cycle++;
-        switch (opcode) {
+        switch (opcodeName) {
             case 'Special':
-                switch (func) {
-                    case 0: // sll rd, rt, sa
+                switch (funcName) {
+                    case 'sll': // sll rd, rt, sa
                         r[rd] = r[rt] << a;
                         break;
-                    case 2: // srl rd, rt, sa
+                    case 'srl': // srl rd, rt, sa
                         r[rd] = r[rt] >>> a;
                         break;
-                    case 3: // sra rd, rt, sa
+                    case 'sra': // sra rd, rt, sa
                         r[rd] = r[rt] >> a;
                         break;
-                    case 4: // sllv rd, rt, rs
+                    case 'sllv': // sllv rd, rt, rs
                         r[rd] = r[rt] << (r[rs] & 0x1f);
                         break;
-                    case 6: // srlv rd, rt, rs
+                    case 'srlv': // srlv rd, rt, rs
                         r[rd] = r[rt] >>> (r[rs] & 0x1f);
                         break;
-                    case 7: // srav rd, rt, rs
+                    case 'srav': // srav rd, rt, rs
                         r[rd] = r[rt] >> (r[rs] & 0x1f);
                         break;
-                    case 8: // jr rs
+                    case 'jr': // jr rs
                         nextPC = r[rs];
                         hasDelaySlot = true;
                         break;
-                    case 13: // break;
+                    case 'syscall':
+                        //@TODO Syscall
+                        exception |= EXCEPTION_CODE.BREAK;
+                        break;
+                    case 'break': // break;
                         // @TODO Break
                         exception |= EXCEPTION_CODE.BREAK;
                         break;
-                    case 16: // mfhi
+                    case 'mfhi': // mfhi
                         tmp = r[REGISTERS.$HI];
                         r[rd] = tmp;
                         break;
-                    case 17: // mthi
+                    case 'mthi': // mthi
                         tmp = r[rs];
                         r[REGISTERS.$HI] = tmp;
                         break;
-                    case 18: // mflo
+                    case 'mflo': // mflo
                         r[rd] = r[REGISTERS.$LO];
                         break;
-                    case 19: // mtlo
+                    case 'mtlo': // mtlo
                         r[REGISTERS.$LO] = r[rs];
                         break;
-                    case 24: // mult
+                    case 'mult': // mult
                         tmp = (r[rs] | 0) * (r[rt] | 0);
                         if (tmp > 0x7fffffff || tmp < -0x80000000) {
                             exception |= EXCEPTION_CODE.INT_OVERFLOW;
@@ -91,23 +97,23 @@ export class FunctionalCPU extends CPUInternal {
                         r[REGISTERS.$LO] = tmp;
 
                         break;
-                    case 25: // multu
+                    case 'multu': // multu
                         tmp = (r[rs]) * (r[rt]);
                         r[REGISTERS.$LO] = tmp;
                         break;
-                    case 26: // div
+                    case 'div': // div
                         tmp = (r[rs] | 0) % (r[rt] | 0);
                         r[REGISTERS.$HI] = tmp;
                         tmp = Math.floor(((r[rs] | 0) / (r[rt] | 0)));
                         r[REGISTERS.$LO] = tmp;
                         break;
-                    case 27: // divu
+                    case 'divu': // divu
                         tmp = (r[rs] | 0) % (r[rt] | 0);
                         r[REGISTERS.$HI] = tmp;
                         tmp = Math.floor(((r[rs] | 0) / (r[rt] | 0)));
                         r[REGISTERS.$LO] = tmp;
                         break;
-                    case 32: // add rd, rs, rt with overflow check
+                    case 'add': // add rd, rs, rt with overflow check
                         // JavaScript casting trick here
                         // 0xffffffff | 0 = -1 --> get signed from unsigned
                         tmp = (r[rs] | 0) + (r[rt] | 0);
@@ -116,35 +122,35 @@ export class FunctionalCPU extends CPUInternal {
                         }
                         r[rd] = tmp;
                         break;
-                    case 33: // addu rd, rs, rt
+                    case 'addu': // addu rd, rs, rt
                         r[rd] = r[rs] + r[rt];
                         break;
-                    case 34: // sub rd, rs, rt with overflow check
+                    case 'sub': // sub rd, rs, rt with overflow check
                         tmp = (r[rs] | 0) - (r[rt] | 0);
                         if (tmp > 0x7fffffff || tmp < -0x80000000) {
                             exception |= EXCEPTION_CODE.INT_OVERFLOW;
                         }
                         r[rd] = tmp;
                         break;
-                    case 35: // subu rd, rs, rt
+                    case 'subu': // subu rd, rs, rt
                         r[rd] = r[rs] - r[rt];
                         break;
-                    case 36: // and rd, rs, rt
+                    case 'and': // and rd, rs, rt
                         r[rd] = r[rs] & r[rt];
                         break;
-                    case 37: // or rd, rs, rt
+                    case 'or': // or rd, rs, rt
                         r[rd] = r[rs] | r[rt];
                         break;
-                    case 38: // xor rd, rs, rt
+                    case 'xor': // xor rd, rs, rt
                         r[rd] = r[rs] ^ r[rt];
                         break;
-                    case 39: // nor rd, rs, rt
+                    case 'nor': // nor rd, rs, rt
                         r[rd] = ~(r[rs] | r[rt]);
                         break;
-                    case 42: // slt rd, rs, rt
+                    case 'slt': // slt rd, rs, rt
                         r[rd] = (r[rs] | 0) < (r[rt] | 0);
                         break;
-                    case 43: // sltu rd, rs, rt
+                    case 'sltu': // sltu rd, rs, rt
                         r[rd] = (r[rs] < r[rt]);
                         break;
                     default:
@@ -372,14 +378,14 @@ export class FunctionalCPU extends CPUInternal {
                 break;
             case 'SimSpecial':
                 // simulator special
-                switch (func) {
-                    case 0: // print register
+                switch (funcName) {
+                    case 'printr': // print register
                         this.eventBus.post('print', 'r' + rs, 'r', r[rs]);
                         break;
-                    case 1: // print memory
+                    case 'printm': // print memory
                         this.eventBus.post('print', '0x' + Lib.padLeft(r[rs].toString(16), '0', 8), 'm', mem.getByte(r[rs]))
                         break;
-                    case 2: // print string
+                    case 'prints': // print string
                         tmp = r[rs];
                         let str = '', curChar;
                         while ((curChar = mem.getByte(tmp)) != 0) {
