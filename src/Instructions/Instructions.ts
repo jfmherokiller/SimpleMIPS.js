@@ -71,6 +71,8 @@ export class Instructions {
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
         // floating point stuff
         // @TODO
+        'add.s':  ['0100 01ff ffft tttt ssss sddd dd00 0000','FS','N'],
+        'add.d':['0100 01ff ffft tttt ssss sddd dd00 0000','FS','N'],
     };
 
     static MakeCPUInstructionClasses() {
@@ -101,7 +103,8 @@ class CPUInstrclass {
         RS: [],
         I: [],
         RT: [],
-        N: []
+        N: [],
+        FS:[],
     };
     INST_ALL = [];
     // instructions using relative PC
@@ -164,27 +167,60 @@ class CPUInstrclass {
                 .replace(/c/g, '0') // @TODO: break code support
                 .replace(/a/g, 'i') // a is also i
                 .replace(/-/g, '0')
+                .replace(/f/g,'0')
                 .replace(/ /g, ''); // no need for format
             let instCode = parseInt(cur.slice(0, 6), 2);
+            let copCode = parseInt(cur.slice(26,31),2);
             let rs = parseInt(cur.slice(6, 11),2);
             let rt = parseInt(cur.slice(11, 16), 2);
+            let fmt = parseInt(cur.slice(6, 11),2);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
             funcBody += 'var base = ' + (instCode << 26) + ';\n';
-            // rs, rd, rt
-            if (cur.indexOf('s') > 0) {
-                funcBody += 'base |= (info.rs << 21);\n';
+            // rs, rd, rt, fmt
+            if(type === 'FS')
+            {
+
+                if (cur.indexOf('t') > 0) {
+                    funcBody += 'base |= (info.rt << 16);\n';
+                }
+                if (cur.indexOf('s') > 0) {
+                    funcBody += 'base |= (info.rs << 11);\n';
+                } else {
+                    funcBody += `base |= (${rs} << 11);\n`
+                }
+                if (cur.indexOf('d') > 0) {
+                    funcBody += 'base |= (info.rd << 6);\n';
+                }
+                if(inst.lastIndexOf(".s") > 0)
+                {
+                    funcBody += `base |= (0 << 21);\n`; // single fmt
+                }
+                if(inst.lastIndexOf(".d") > 0) {
+                    funcBody += `base |= (1 << 21);\n`; // single fmt
+                }
+                if(inst.lastIndexOf(".w") > 0) {
+                    funcBody += `base |= (4 << 21);\n`; // single fmt
+                }
+                funcBody += `base |= (${copCode} << 5);\n`; // coprocessor code
+
+
             } else {
-                funcBody += `base |= (${rs} << 21);
-`
+
+                if (cur.indexOf('s') > 0) {
+                    funcBody += 'base |= (info.rs << 21);\n';
+                } else {
+                    funcBody += `base |= (${rs} << 21);\n`
+                }
+                if (cur.indexOf('d') > 0) {
+                    funcBody += 'base |= (info.rd << 11);\n';
+                }
+                if (cur.indexOf('t') > 0) {
+                    funcBody += 'base |= (info.rt << 16);\n';
+                }
             }
-            if (cur.indexOf('d') > 0) {
-                funcBody += 'base |= (info.rd << 11);\n';
-            }
-            if (cur.indexOf('t') > 0) {
-                funcBody += 'base |= (info.rt << 16);\n';
-            }
+
             if (type === 'RSDRTI') {
                 funcBody += `base |= (${rt} << 16);\n`;
             }
