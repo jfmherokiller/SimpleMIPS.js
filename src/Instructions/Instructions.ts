@@ -71,8 +71,8 @@ export class Instructions {
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
         // floating point stuff
         // @TODO
-        'add.s':  ['0100 01ff ffft tttt ssss sddd dd00 0000','FS','N'],
-        'add.d':['0100 01ff ffft tttt ssss sddd dd00 0000','FS','N'],
+        'add.s':  ['0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
+        'add.d':['0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
     };
 
     static MakeCPUInstructionClasses() {
@@ -104,7 +104,7 @@ class CPUInstrclass {
         I: [],
         RT: [],
         N: [],
-        FS:[],
+        FSRRR:[],
     };
     INST_ALL = [];
     // instructions using relative PC
@@ -173,38 +173,35 @@ class CPUInstrclass {
             let copCode = parseInt(cur.slice(26,31),2);
             let rs = parseInt(cur.slice(6, 11),2);
             let rt = parseInt(cur.slice(11, 16), 2);
-            let fmt = parseInt(cur.slice(6, 11),2);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
             funcBody += 'var base = ' + (instCode << 26) + ';\n';
             // rs, rd, rt, fmt
-            if(type === 'FS')
+            if(type.lastIndexOf('FS',0) == 0)
             {
-
-                if (cur.indexOf('t') > 0) {
-                    funcBody += 'base |= (info.rt << 16);\n';
-                }
-                if (cur.indexOf('s') > 0) {
-                    funcBody += 'base |= (info.rs << 11);\n';
-                } else {
-                    funcBody += `base |= (${rs} << 11);\n`
-                }
-                if (cur.indexOf('d') > 0) {
-                    funcBody += 'base |= (info.rd << 6);\n';
-                }
-                if(inst.lastIndexOf(".s") > 0)
-                {
-                    funcBody += `base |= (0 << 21);\n`; // single fmt
+                if(inst.lastIndexOf(".s") > 0) {
+                    funcBody += `base |= (16 << 21);\n`; // single fmt=0
                 }
                 if(inst.lastIndexOf(".d") > 0) {
-                    funcBody += `base |= (1 << 21);\n`; // single fmt
+                    funcBody += `base |= (17 << 21);\n`; // double fmt=1
                 }
                 if(inst.lastIndexOf(".w") > 0) {
-                    funcBody += `base |= (4 << 21);\n`; // single fmt
+                    funcBody += `base |= (20 << 21);\n`; // word fmt=4
                 }
-                funcBody += `base |= (${copCode} << 5);\n`; // coprocessor code
+                if (cur.indexOf('t') > 0) {
+                    funcBody += 'base |= (info.ft << 16);\n';
+                }
+                if (cur.indexOf('s') > 0) {
+                    funcBody += 'base |= (info.fs << 11);\n';
+                } else {
+                    funcBody += `base |= (${rs} << 11);\n`;
+                }
+                if (cur.indexOf('d') > 0) {
+                    funcBody += 'base |= (info.fd << 6);\n';
+                }
 
+                funcBody += `base |= (${copCode} << 0);\n`; // coprocessor code
 
             } else {
 

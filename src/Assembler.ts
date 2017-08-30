@@ -672,6 +672,18 @@ export class Assembler {
                     throw new Error('Expecting 1 immediate for ' + instName);
                 }
                 break;
+            case this.InstructionTypes.INST_TYPES.FSRRR:
+                expectedTokens = tokenList.expect([
+                    TOKEN_TYPE.REGOPR,TOKEN_TYPE.COMMA,TOKEN_TYPE.REGOPR,TOKEN_TYPE.COMMA,TOKEN_TYPE.REGOPR
+                ]);
+                if (expectedTokens) {
+                    result.fd = expectedTokens[0].value;
+                    result.fs = expectedTokens[2].value;
+                    result.ft = expectedTokens[4].value;
+                } else {
+                    throw new Error('Expecting 3 Registers for ' + instName);
+                }
+                break;
             case this.InstructionTypes.INST_TYPES.N:
                 // nothing to expect, do nothing
                 break;
@@ -829,8 +841,12 @@ export class Assembler {
         }
         return result;
     }
-
-    regAliases = ('$zero $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
+    Float_regAliases = (
+        '$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,' +
+        '$f8,$f9,$f10,$f11,$f12,$f13,$f14,$f15,' +
+        '$f16,$f17,$f18,$f19,$f20,$f21,$f22,$f23,' +
+        '$f24,$f25,$f26,$f27,$f28,$f29,$f30,$f31').split(',');
+    GRP_regAliases = ('$zero $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
         '$t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 ' +
         '$s0 $s1 $s2 $s3 $s4 $s5 $s6 $s7 ' +
         '$t8 $t9 $k0 $k1 $gp $sp $fp $ra').split(' ');
@@ -839,7 +855,9 @@ export class Assembler {
         let idx;
         if (regname == 'zero') {
             return 0;
-        } else if ((idx = this.regAliases.indexOf(regname)) >= 0) {
+        } else if ((idx = this.GRP_regAliases.indexOf(regname)) >= 0) {
+            return idx;
+        } else if  ((idx = this.Float_regAliases.indexOf(regname)) >= 0) {
             return idx;
         } else {
             let match = regname.match(/\d+/),
@@ -854,8 +872,12 @@ export class Assembler {
     }
 
     resolveSymbols(list, symbols, aliases) {
-        let n = list.length, i, cur, newVal,
-            needHigh16Bits, needLow16Bits;
+        let n = list.length;
+        let i;
+        let cur;
+        let newVal;
+        let needHigh16Bits;
+        let needLow16Bits;
         for (i = 0; i < n; i++) {
             cur = list[i];
             if (cur.type == NODE_TYPE.DATA) continue;
@@ -867,6 +889,15 @@ export class Assembler {
             }
             if (typeof(cur.rd) == 'string') {
                 cur.rd = this.convertRegName(cur.rd);
+            }
+            if (typeof(cur.ft) == 'string') {
+                cur.ft = this.convertRegName(cur.ft);
+            }
+            if (typeof(cur.fs) == 'string') {
+                cur.fs = this.convertRegName(cur.fs);
+            }
+            if (typeof(cur.fd) == 'string') {
+                cur.fd = this.convertRegName(cur.fd);
             }
             if (typeof(cur.imm) == 'string') {
                 // resolve label

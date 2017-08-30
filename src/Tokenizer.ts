@@ -31,6 +31,6 @@ export class regexObject {
         // char is also integer
         this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-*\d*)\((\$\w{1,2}|zero)\)/);
         this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/);
-        this.addRegexLine(TOKEN_TYPE.WORD, /^(\w+)(?!:)/);
+        this.addRegexLine(TOKEN_TYPE.WORD, /^(\w+\.*\w+|\w+)(?!:)/);
     }
 }

@@ -8,6 +8,9 @@ export class InstructionNode extends TokenNode {
     rs:number;
     rd:number;
     rt:number;
+    fs:number;
+    fd:number;
+    ft:number;
     imm:number;
     line: number;
     constructor(instructionName,currentAddress,InstructionSize,line_number)
