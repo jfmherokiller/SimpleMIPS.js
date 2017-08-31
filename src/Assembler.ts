@@ -737,17 +737,10 @@ export class Assembler {
     //  when text include inst, rs, rd, rt, imm
     // }
     parseLine(tokens, lineno, symbols, status) {
-        let relAddr = 0;
         let curToken;
-        let i;
         let flag;
         let tokenRecognized;
-        let curLine;
-        let rs;
-        let rt;
-        let rd;
         let inst;
-        let func;
         let idx;
         let tmp;
         let result = [];
