@@ -1,3 +1,6 @@
+
+import {FPU_format} from "./index";
+
 export class Instructions {
     static instructionTable = {
         // load/store
@@ -181,13 +184,13 @@ class CPUInstrclass {
             if(type.lastIndexOf('FS',0) == 0)
             {
                 if(inst.lastIndexOf(".s") > 0) {
-                    funcBody += `base |= (16 << 21);\n`; // single fmt=0
+                    funcBody += `base |= (${FPU_format.single} << 21);\n`; // single fmt=0
                 }
                 if(inst.lastIndexOf(".d") > 0) {
-                    funcBody += `base |= (17 << 21);\n`; // double fmt=1
+                    funcBody += `base |= (${FPU_format.double} << 21);\n`; // double fmt=1
                 }
                 if(inst.lastIndexOf(".w") > 0) {
-                    funcBody += `base |= (20 << 21);\n`; // word fmt=4
+                    funcBody += `base |= (${FPU_format.word} << 21);\n`; // word fmt=4
                 }
                 if (cur.indexOf('t') > 0) {
                     funcBody += 'base |= (info.ft << 16);\n';
