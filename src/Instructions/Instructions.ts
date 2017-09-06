@@ -1,5 +1,6 @@
 
 import {FPU_format} from "./index";
+import {Lib} from "../Lib";
 
 export class Instructions {
     static instructionTable = {
@@ -73,10 +74,39 @@ export class Instructions {
         'printm': ['1111 11ss sss0 0000 0000 0000 0000 0001', 'RS', 'N'], // print mem[$s] simulation
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
         // floating point stuff
-        // @TODO
-        'add.s':  ['0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
-        'add.d':['0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
+        // @Todo
     };
+    static floatingpoint_instructions() {
+        let newbases = {};
+        let instruction_bases = [
+            //arithmatic
+            ['abs.','0100 01ff fff0 0000 ssss sddd dd00 0101','FSRR','N'],
+            ['add.','0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
+            ['ceil.w.','0100 01ff fff0 0000 ssss sddd dd00 1110','FSRR','N'],
+            ['cvt.d.','0100 01ff fff0 0000 ssss sddd dd10 0001','FSRR','N'],
+            ['cvt.s.','0100 01ff fff0 0000 ssss sddd dd10 0000','FSRR','N'],
+            ['cvt.w.','0100 01ff fff0 0000 ssss sddd dd10 0100','FSRR','N'],
+            ['div.','0100 01ff ffft tttt ssss sddd dd00 0011','FSRRR','N'],
+            ['mul.','0100 01ff ffft tttt ssss sddd dd00 0010','FSRRR','N'],
+            ['floor.w.','0100 01ff fff0 0000 ssss sddd dd00 1111','FSRR','N'],
+            ['round.w.','0100 01ff fff0 0000 ssss sddd dd00 1100','FSRR','N'],
+            ['sqrt.','0100 01ff fff0 0000 ssss sddd dd00 0100','FSRR','N'],
+            ['sub.','0100 01ff ffft tttt ssss sddd dd00 0001','FSRRR','N'],
+            ['trunc.w.','0100 01ff fff0 0000 ssss sddd dd00 1101','FSRR','N'],
+            //movement
+            ['mov.','0100 01ff fff0 0000 ssss sddd dd00 0110','FSRR','N'],
+            //logical
+            ['neg.','0100 01ff fff0 0000 ssss sddd dd00 0111','FSRR','N'],
+        ];
+        for(let inst of instruction_bases) {
+            for(let datatype of 'd,s'.split(',')) {
+                let newinst = inst.slice();
+                newinst[0] = inst[0] + datatype;
+                newbases[newinst[0]] = newinst.slice(1);
+            }
+        }
+        return newbases;
+    }
 
     static MakeCPUInstructionClasses() {
         return new CPUInstrclass()
@@ -108,6 +138,7 @@ class CPUInstrclass {
         RT: [],
         N: [],
         FSRRR:[],
+        FSRR:[]
     };
     INST_ALL = [];
     // instructions using relative PC
@@ -125,12 +156,13 @@ class CPUInstrclass {
         let needRd;
         let needRt;
         let needImm;
+        let instructions = Lib.extend(Instructions.instructionTable,Instructions.floatingpoint_instructions());
 
 
         // instructions with signed imm (need convertion when encoding)
         // classify
-        for (let inst in Instructions.instructionTable) {
-            cur = Instructions.instructionTable[inst];
+        for (let inst in instructions) {
+            cur = instructions[inst];
             if (cur[0] && cur[0].length > 0) {
                 this.INST_CAT[cur[1]].push(inst);
                 this.INST_ALL.push(inst);
