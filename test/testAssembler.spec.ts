@@ -52,13 +52,13 @@ describe("Assembler Tests", function () {
     describe("Arithmetic Opcodes", function () {
         let memoryaccess_opcodelist: opcodeObject[] = [
             {instruction: `add $at,$s1,$s2`},
-            {instruction: `addi $at,5`},
-            {instruction: `addiu $at,10`},
+            {instruction: `addi $at,$at,5`},
+            {instruction: `addiu $at,$at,10`},
             {instruction: `addu $at,$s1,$s2`},
-            {instruction: `div $at,$s1,$s2`},
-            {instruction: `divu $at,$s1,$s2`},
-            {instruction: `mult $at,$s1,$s2`},
-            {instruction: `multu $at,$s1,$s2`},
+            {instruction: `div $s1,$s2`},
+            {instruction: `divu $s1,$s2`},
+            {instruction: `mult $s1,$s2`},
+            {instruction: `multu $s1,$s2`},
             {instruction: `sub $at,$s1,$s2`},
             {instruction: `subu $at,$s1,$s2`},
         ];
