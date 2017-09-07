@@ -1,8 +1,8 @@
-import {Assembler} from '../src/Assembler';
+import {Assembler} from '../../src/Assembler';
 import 'mocha';
 import {assert} from "chai";
-import {EXCEPTION_CODE,FunctionalCPU} from "../src/CPU";
-import {Memory} from "../src/Memory";
+import {EXCEPTION_CODE,FunctionalCPU} from "../../src/CPU";
+import {Memory} from "../../src/Memory";
 import {readFileSync} from "fs";
 
 
@@ -16,10 +16,18 @@ describe("Functional CPU Testing", function () {
         cpu = new FunctionalCPU(mem);
         registerEvents(cpu);
     });
-    describe("hello world test", function () {
+    describe("run test programs", function () {
+        let program_path = __dirname;
         it("it should correctly run the hello world code", function () {
-            let helloworld_path = __dirname + "/helloworld.asm";
-            let assembleres = assembler.assemble(readFileSync(helloworld_path, "utf8"));
+            program_path += "/helloworld.asm";
+            let assembleres = assembler.assemble(readFileSync(program_path, "utf8"));
+            mem.importAsm(assembleres);
+            cpu.reset();
+            Runcpu(cpu);
+        });
+        it("it should run the forloop code", function () {
+            program_path += "/forloop.asm";
+            let assembleres = assembler.assemble(readFileSync(program_path, "utf8"));
             mem.importAsm(assembleres);
             cpu.reset();
             Runcpu(cpu);
