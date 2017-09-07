@@ -20,40 +20,39 @@ interface opcodeObject {
     instruction:string;
 }
 
-function range(j, k) {
-    const targetLength = (k - j) + 1;
-    const a = Array(targetLength);
-    const b = Array.apply(null, a);
-    return b.map(function (discard, n) {
-        return n + j;
-    });
-}
+
 function GenerateTest_Instructions() {
+    function range(j, k) {
+        const targetLength = (k - j) + 1;
+        const a = Array(targetLength);
+        const b = Array.apply(null, a);
+        return b.map(function (discard, n) {
+            return n + j;
+        });
+    }
     let operations:opcodeObject[] = [];
-    let GRP_regAliases = ('$zero $at ${register} $v1 $a0 $a1 $a2 $a3 ' +
+    let GRP_regAliases = ('$zero $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
         '$t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 ' +
         '$s0 $s1 $s2 $s3 $s4 $s5 $s6 $s7 ' +
         '$t8 $t9 $k0 $k1 $gp $sp $fp $ra').split(' ');
     GRP_regAliases.forEach(function (register) {
         GRP_regAliases.forEach(function (register2) {
-            range(0,32767).forEach(function (offset_or_immediate) {
                 let memoryaccess_opcodelist:opcodeObject[] = [
-                    {instruction:`lb ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`lbu ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`lh ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`lhu ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`lui ${register2},${offset_or_immediate}`},
-                    {instruction:`lw ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`sb ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`sh ${register2},${offset_or_immediate}(${register})`},
-                    {instruction:`sw ${register2},${offset_or_immediate}(${register})`},
+                    {instruction:`lb ${register2},0(${register})`},
+                    {instruction:`lbu ${register2},0(${register})`},
+                    {instruction:`lh ${register2},0(${register})`},
+                    {instruction:`lhu ${register2},0(${register})`},
+                    {instruction:`lui ${register2},0`},
+                    {instruction:`lw ${register2},0(${register})`},
+                    {instruction:`sb ${register2},0(${register})`},
+                    {instruction:`sh ${register2},0(${register})`},
+                    {instruction:`sw ${register2},0(${register})`},
                     {instruction:`mfhi ${register2}`},
                     {instruction:`mflo ${register2}`},
                     {instruction:`mthi ${register2}`},
                     {instruction:`mtlo ${register2}`},
                 ];
                 operations = operations.concat(memoryaccess_opcodelist);
-            });
         });
     });
     return operations;
