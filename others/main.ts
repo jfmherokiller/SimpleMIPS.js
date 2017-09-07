@@ -17,10 +17,10 @@ main:
 la $s0, str
 add $a0, $r0, $s0
 pushr $ra
-la $ra, main_ret
+la $ra, $main_ret
 j convert
 nop
-main_ret:
+$main_ret:
 # debug print, not true instruction
 prints $s0
 break
