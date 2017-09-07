@@ -1,11 +1,9 @@
-
 import {Assembler} from '../src/Assembler';
- import 'mocha';
+import 'mocha';
 import {assert} from "chai";
 import {Lib} from "../src/Lib";
 
-function ReturnTestAsm (asmline)
-{
+function ReturnTestAsm(asmline) {
     return `
 #testcode
 .data
@@ -16,8 +14,9 @@ main:
         ${asmline}
         `;
 }
+
 interface opcodeObject {
-    instruction:string;
+    instruction: string;
 }
 
 
@@ -30,44 +29,37 @@ function GenerateTest_Instructions() {
             return n + j;
         });
     }
-    let operations:opcodeObject[] = [];
-    let GRP_regAliases = ('$0 $at $v0 $v1 $a0 $a1 $a2 $a3 ' +
-        '$t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 ' +
-        '$s0 $s1 $s2 $s3 $s4 $s5 $s6 $s7 ' +
-        '$t8 $t9 $k0 $k1 $gp $sp $fp $ra').split(' ');
-    GRP_regAliases.forEach(function (register) {
-        GRP_regAliases.forEach(function (register2) {
-                let memoryaccess_opcodelist:opcodeObject[] = [
-                    {instruction:`lb ${register2},0(${register})`},
-                    {instruction:`lbu ${register2},0(${register})`},
-                    {instruction:`lh ${register2},0(${register})`},
-                    {instruction:`lhu ${register2},0(${register})`},
-                    {instruction:`lui ${register2},0`},
-                    {instruction:`lw ${register2},0(${register})`},
-                    {instruction:`sb ${register2},0(${register})`},
-                    {instruction:`sh ${register2},0(${register})`},
-                    {instruction:`sw ${register2},0(${register})`},
-                    {instruction:`mfhi ${register2}`},
-                    {instruction:`mflo ${register2}`},
-                    {instruction:`mthi ${register2}`},
-                    {instruction:`mtlo ${register2}`},
-                ];
-                operations = operations.concat(memoryaccess_opcodelist);
-        });
-    });
+
+    let operations: opcodeObject[] = [];
+    let memoryaccess_opcodelist: opcodeObject[] = [
+        {instruction: `lb $at,0($at)`},
+        {instruction: `lbu $at,0($at)`},
+        {instruction: `lh $at,0($at)`},
+        {instruction: `lhu $at,0($at)`},
+        {instruction: `lui $at,0`},
+        {instruction: `lw $at,0($at)`},
+        {instruction: `sb $at,0($at)`},
+        {instruction: `sh $at,0($at)`},
+        {instruction: `sw $at,0($at)`},
+        {instruction: `mfhi $at`},
+        {instruction: `mflo $at`},
+        {instruction: `mthi $at`},
+        {instruction: `mtlo $at`},
+    ];
+    operations = operations.concat(memoryaccess_opcodelist);
     return operations;
 }
 
-describe("Assembler Tests",function () {
+describe("Assembler Tests", function () {
     let assembler = new Assembler();
-    describe("Assembler initialization",function () {
-        it("should not be a null object",function () {
+    describe("Assembler initialization", function () {
+        it("should not be a null object", function () {
             assert.isNotNull(assembler);
         });
     });
-    describe("Memory Access Opcodes",function () {
+    describe("Memory Access Opcodes", function () {
         GenerateTest_Instructions().forEach(function (opcode) {
-            it('correctly assembles the opcode ' + opcode.instruction, function() {
+            it('correctly assembles the opcode ' + opcode.instruction, function () {
                 let assemblout = assembler.assemble(ReturnTestAsm(opcode.instruction)).textMem[2].toString(16);
                 assert.isNotNull(assemblout);
             });
