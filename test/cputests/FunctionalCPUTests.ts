@@ -17,17 +17,17 @@ describe("Functional CPU Testing", function () {
         registerEvents(cpu);
     });
     describe("run test programs", function () {
-        let program_path = __dirname;
+        const program_path = __dirname;
         it("it should correctly run the hello world code", function () {
-            program_path += "/helloworld.asm";
-            let assembleres = assembler.assemble(readFileSync(program_path, "utf8"));
+            let program_path_Inner = program_path + "/helloworld.asm";
+            let assembleres = assembler.assemble(readFileSync(program_path_Inner, "utf8"));
             mem.importAsm(assembleres);
             cpu.reset();
             Runcpu(cpu);
         });
         it("it should run the forloop code", function () {
-            program_path += "/forloop.asm";
-            let assembleres = assembler.assemble(readFileSync(program_path, "utf8"));
+            let program_path_Inner = program_path + "/forloop.asm";
+            let assembleres = assembler.assemble(readFileSync(program_path_Inner, "utf8"));
             mem.importAsm(assembleres);
             cpu.reset();
             Runcpu(cpu);
