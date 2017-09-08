@@ -323,6 +323,9 @@ export class Assembler {
                                 newNode.value = parseInt(matches[0]);
                             }
                             break;
+                        case TOKEN_TYPE.FLOAT:
+                            newNode.value = parseFloat(matches[0]);
+                            break;
                         default:
                             newNode.value = matches[0].toLowerCase();
                     }
