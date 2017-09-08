@@ -7,7 +7,7 @@ export class Memory {
     latencyCtr: number;
     latency: number;
     busy: boolean;
-    chunks;
+    chunks:Uint8Array[];
 
     constructor() {
         this.chunks = [];
