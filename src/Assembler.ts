@@ -245,7 +245,7 @@ export class Assembler {
                 curTokenList = this.tokenize(lines[i]);
                 infoList.push.apply(infoList, this.parseLine(curTokenList, i + 1, symbolTable, statusTable));
             } catch (err) {
-                throw new Error('L' + (i + 1) + ':' + err.message);
+                throw new Error('L' + (i + 1) + ':' + err.message).stack = err.stack;
             }
         }
         //console.log(infoList);
