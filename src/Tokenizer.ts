@@ -29,10 +29,10 @@ export class regexObject {
         this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$zero|\$\w{1,2}\b)/); //$ra
         // char is also integer
         this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-?\d*)\((\$\w{1,2}|\$zero)\)/); // offset(base)
-        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(?![A-Za-z_+]+)(-?\d+)(?![A-Za-z_+]+)/); // 123456
-        this.addRegexLine(TOKEN_TYPE.FLOAT, /^(?![A-Za-z_+]+)(\d+\.\d+)(?![A-Za-z_+]+)/); //1.0
+        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(-?\d+\b)/); // 123456
+        this.addRegexLine(TOKEN_TYPE.FLOAT, /^-?([\d]+[.][\d]+)$/); //1.0
         this.addRegexLine(TOKEN_TYPE.WORD, /^([\w.$]+)(?!:)/); //In$ertD4taH3re
         this.addRegexLine(TOKEN_TYPE.CHAR, /^'([^'\\]|\\*)'/); //'\b\n'
-        this.addRegexLine(TOKEN_TYPE.HEXNUM, /^(0x[\da-f]+\b)/)
+        this.addRegexLine(TOKEN_TYPE.HEXNUM, /^(0x[\da-fA-F]+\b)/)
     }
 }
