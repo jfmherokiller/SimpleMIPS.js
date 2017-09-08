@@ -403,41 +403,37 @@ export class Assembler {
     // pack integer list into memory binary
     static packIntegers(list, unitSize) {
         let result = [];
-        let i;
-        let n;
-        let t;
         if (unitSize == 4) {
-            n = list.length;
-            for (i = 0; i < n; i++) {
+            for (let i = 0; i < list.length; i++) {
                 result.push(Assembler.convertWord(list[i]));
             }
         } else if (unitSize == 2) {
-            n = list.length;
+            let n = list.length;
             if (n % 2 != 0) {
                 list.push(0);
                 n++;
             }
-            for (i = 0; i < n; i += 2) {
+            for (let i = 0; i < n; i += 2) {
                 result.push(Assembler.convertHalfword(list[i]) * 65536 +
                     Assembler.convertHalfword(list[i + 1]));
             }
         } else if (unitSize == 1) {
-            n = list.length;
-            t = 4 - n % 4;
+            let n = list.length;
+            let t = 4 - n % 4;
             if (t < 4) {
-                for (i = 0; i < t; i++) {
+                for (let i = 0; i < t; i++) {
                     list.push(0);
                 }
                 n += t;
             }
-            for (i = 0; i < n; i += 4) {
+            for (let i = 0; i < n; i += 4) {
                 result.push(Assembler.convertByte(list[i]) * 16777216 +
                     (Assembler.convertByte(list[i + 1]) << 16) +
                     (Assembler.convertByte(list[i + 2]) << 8) +
                     Assembler.convertByte(list[i + 3]));
             }
         } else {
-            throw new Error('Invaid unit size for alignment.')
+            throw new Error('Invalid unit size for alignment.')
         }
         return result;
     }
@@ -728,14 +724,13 @@ export class Assembler {
     }
 
     expandPseudoInstruction(tokens, type) {
-        let instName = this.PiObject.PI_NAMES[type],
-            expectations = this.PiObject.PI_EXPECTS[type],
-            newCode = this.PiObject.PI_TRANSLATION[type],
-            expectedTokens;
-        expectedTokens = tokens.expect(expectations);
+        let instName = this.PiObject.PI_NAMES[type];
+        let expectations = this.PiObject.PI_EXPECTS[type];
+        let newCode = this.PiObject.PI_TRANSLATION[type];
+        let expectedTokens = tokens.expect(expectations);
         if (expectedTokens) {
             newCode = newCode.replace(/\{(\d+)\.*(.*?)\}/g, function (match, p1, p2) {
-                var n = parseInt(p1), newVal;
+                let n = parseInt(p1), newVal;
                 if (isNaN(n) || n < 0 || n >= expectedTokens.length) {
                     throw new Error('Invalid index ' + p1 + ' in format string.');
                 }
@@ -899,12 +894,11 @@ export class Assembler {
 
     resolveSymbols(list, symbols, aliases) {
         let n = list.length;
-        let cur;
         let newVal;
         let needHigh16Bits;
         let needLow16Bits;
         for (let i = 0; i < n; i++) {
-            cur = list[i];
+            let cur = list[i];
             if (cur.type == NODE_TYPE.DATA) continue;
             if (typeof(cur.rt) == 'string') {
                 cur.rt = this.convertRegName(cur.rt);
@@ -964,28 +958,26 @@ export class Assembler {
 
     // translate into machine code
     translate(list, text, data, statusTable) {
-        let startIndex;
-        let endIndex;
         for (let i = 0; i < list.length; i++) {
             let currentToken: (DataNode | InstructionNode) = list[i];
             if (currentToken instanceof DataNode) {
                 if (currentToken.data) {
                     // copy data
-                    startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
-                    endIndex = startIndex + (currentToken.size >> 2);
+                    let startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
+                    let endIndex = startIndex + (currentToken.size >> 2);
                     for (let k = 0, j = startIndex; j < endIndex; j++, k++) {
                         data[j] = currentToken.data[k];
                     }
                 } else {
                     // other wise fill with zeros
-                    startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
-                    endIndex = startIndex + (currentToken.size >> 2);
+                    let startIndex = (currentToken.addr - statusTable.dataStartAddr) >> 2;
+                    let endIndex = startIndex + (currentToken.size >> 2);
                     for (let j = startIndex; j < endIndex; j++) {
                         data[j] = 0;
                     }
                 }
             } else {
-                startIndex = (currentToken.addr - statusTable.textStartAddr) >> 2;
+                let startIndex = (currentToken.addr - statusTable.textStartAddr) >> 2;
                 text[startIndex] = this.InstructionClasses.translators[currentToken.inst](currentToken);
             }
         }
