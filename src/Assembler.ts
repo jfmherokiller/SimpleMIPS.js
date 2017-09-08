@@ -314,6 +314,7 @@ export class Assembler {
                             newNode.value = matches[2].toLowerCase();
                             break;
                         case TOKEN_TYPE.INTEGER:
+                        case TOKEN_TYPE.ESCAPED:
                             if (matches[2]) {
                                 // preserve original case for char
                                 newNode.value = matches[2].charCodeAt(0);
@@ -504,7 +505,7 @@ export class Assembler {
                 default :
                     unitSize = 4 // word
             }
-            newData = tokenList.expectList(TOKEN_TYPE.INTEGER, TOKEN_TYPE.COMMA);
+            newData = tokenList.expectList([TOKEN_TYPE.INTEGER,TOKEN_TYPE.ESCAPED], TOKEN_TYPE.COMMA);
             if (newData) {
                 newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;

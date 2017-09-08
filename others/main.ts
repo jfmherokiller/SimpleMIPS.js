@@ -4,7 +4,7 @@ import {Lib} from "../src/Lib";
 import {EXCEPTION_CODE, FunctionalCPU} from "../src/CPU";
 
 function createMIPSSIM() {
-    let testcode = `
+    const testcode = `
 # hello world program
 # support .data and .text
 .data
@@ -88,9 +88,9 @@ function registerEvents(cpu) {
     });
 }
 
-function Runcpu(cpu,excode) {
+function Runcpu(cpu, excode) {
     for (let i = 0; i < 12500; i++) {
-        let exception =cpu.step();
+        const exception = cpu.step();
         if(exception === EXCEPTION_CODE.BREAK)
         {
             break;

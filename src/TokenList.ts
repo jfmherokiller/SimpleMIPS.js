@@ -1,8 +1,8 @@
-import {ParserNode,DataNode,InstructionNode} from "./TokenNode";
+import {ParserNode, DataNode, InstructionNode} from "./TokenNode";
 import {TOKEN_TYPE} from "./Tokenizer";
-
+type tokenlistArray = Array<ParserNode | DataNode | InstructionNode>;
 export class TokenList {
-    private _list:(ParserNode|DataNode|InstructionNode)[];
+    private _list:tokenlistArray;
 
     constructor() {
         this._list = [];
@@ -29,7 +29,7 @@ export class TokenList {
     // return matching tokens
     // if keep is true, only return true/false
     // and tokens are not consumed
-    expect(expectedTypes:(TOKEN_TYPE|TOKEN_TYPE[]), keep = false) {
+    expect(expectedTypes: (TOKEN_TYPE|Array<TOKEN_TYPE>|Array<Array<TOKEN_TYPE>>), keep = false) {
         let result;
         if (expectedTypes instanceof Array) {
             let match = (this.getLength() != 0);
@@ -40,7 +40,7 @@ export class TokenList {
             if (n > this._list.length) return result;
             // comparation
             for (let i = 0; i < n; i++) {
-                cur = expectedTypes[i];
+               let cur = expectedTypes[i];
                 if (cur instanceof Array) {
                     // deal with optional types
                     optionalOK = false;
@@ -79,17 +79,27 @@ export class TokenList {
     // expect a constant list
     // eg. 12, 23, 23
     // return an Array of list items
-    expectList(eleType:TOKEN_TYPE, sepType:TOKEN_TYPE) {
+    expectList(Element_Type_Or_Types: (TOKEN_TYPE | TOKEN_TYPE[]), Separator_Type: TOKEN_TYPE) {
         let result = [];
-        let cur = this.expect(eleType);
-        if (cur) {
-            result.push(cur.value);
-            while ((cur = this.expect([sepType, eleType])) != undefined) {
-                result.push(cur[1].value);
+        if (Element_Type_Or_Types instanceof Array) {
+            for (let expectme of Element_Type_Or_Types) {
+                let cur = this.expect(expectme);
+                if (cur) {
+                    result.push(cur.value);
+                    while ((cur = this.expect([Separator_Type, expectme])) != undefined) {
+                        result.push(cur[1].value);
+                    }
+                }
             }
-            return result;
         } else {
-            return undefined;
+            let cur = this.expect(Element_Type_Or_Types);
+            if (cur) {
+                result.push(cur.value);
+                while ((cur = this.expect([Separator_Type, Element_Type_Or_Types])) != undefined) {
+                    result.push(cur[1].value);
+                }
+            }
         }
+        return result;
     }
 }
