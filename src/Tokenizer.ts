@@ -35,6 +35,6 @@ export class regexObject {
         this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-?\d+)/); // 123456
         this.addRegexLine(TOKEN_TYPE.FLOAT, /^(?![A-Za-z_+]+)(\d+\.\d+)(?![A-Za-z_+]+)/); //1.0
         this.addRegexLine(TOKEN_TYPE.WORD, /^([\w.$]+)(?!:)/); //In$ertD4taH3re
-        this.addRegexLine(TOKEN_TYPE.ESCAPED, /^'([^'\\]|\\*)'/)
+        this.addRegexLine(TOKEN_TYPE.ESCAPED, /^'([^'\\]|\\*)'/); //'\b\n'
     }
 }
