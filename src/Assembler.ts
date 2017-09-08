@@ -374,7 +374,9 @@ export class Assembler {
 
     // pack string into memory binary
     static packString(str) {
-        let i, n, res = [];
+        let i;
+        let n;
+        let res = [];
         n = str.length;
         for (i = 3; i < n; i += 4) {
             res.push((str.charCodeAt(i - 3) * 16777216) +
@@ -400,7 +402,10 @@ export class Assembler {
 
     // pack integer list into memory binary
     static packIntegers(list, unitSize) {
-        let result = [], i, n, t;
+        let result = [];
+        let i;
+        let n;
+        let t;
         if (unitSize == 4) {
             n = list.length;
             for (i = 0; i < n; i++) {
@@ -440,24 +445,41 @@ export class Assembler {
     // create a data node for future translation
     // alignment is automatically enforced
     static createDataNode(tokenList: TokenList, type, curAddr, lineno) {
-        let curToken;
         let unitSize;
-        let newSize;
         let newData;
         let result = new DataNode(lineno, curAddr);
+        if(type == '.float') {
+            let curToken = tokenList.expect(TOKEN_TYPE.FLOAT);
+            if (curToken) {
+                let newData = Assembler.convertSingle(curToken.value);
+                result.size = 4; //size of float is 4 bytes
+                result.data = newData;
+            } else {
+                throw new Error('Invalid float directive');
+            }
+        }
+        if(type == '.double') {
+            let curToken = tokenList.expect(TOKEN_TYPE.FLOAT);
+            if (curToken) {
+                let newData = Assembler.convertSingle(curToken.value);
+                result.size = 8; //size of double is 8 bytes
+                result.data = newData;
+            } else {
+                throw new Error('Invalid double directive');
+            }
+        }
         if (type == '.space') {
             // allocate new space, no specific data needed
-            curToken = tokenList.expect(TOKEN_TYPE.INTEGER);
+            let curToken = tokenList.expect(TOKEN_TYPE.INTEGER);
             if (curToken) {
-                newSize = Assembler.alignSize(curToken.value);
-                result.size = newSize;
+                result.size = Assembler.alignSize(curToken.value);
                 result.data = undefined;
             } else {
                 throw new Error('No size specified for .space.');
             }
         } else if (type == '.asciiz' || type == '.ascii') {
             // string
-            curToken = tokenList.expect(TOKEN_TYPE.STRING);
+            let curToken = tokenList.expect(TOKEN_TYPE.STRING);
             if (curToken) {
                 newData = Assembler.packString(curToken.value);
                 result.size = newData.length * 4;
@@ -877,12 +899,11 @@ export class Assembler {
 
     resolveSymbols(list, symbols, aliases) {
         let n = list.length;
-        let i;
         let cur;
         let newVal;
         let needHigh16Bits;
         let needLow16Bits;
-        for (i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             cur = list[i];
             if (cur.type == NODE_TYPE.DATA) continue;
             if (typeof(cur.rt) == 'string') {
