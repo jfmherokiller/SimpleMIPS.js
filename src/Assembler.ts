@@ -291,12 +291,11 @@ export class Assembler {
     tokenize(line) {
 
         let matches;
-        let flag;
         let curType;
         let tokenList = new TokenList();
         let newNode;
         while (line.length > 0) {
-            flag = false;
+            let flag = false;
             for (let i = 0; i < this.regexObject.tokenTypeCount; i++) {
                 matches = line.match(this.regexObject.tokenRegexps[i]);
                 if (matches && matches[0]) {
@@ -357,45 +356,55 @@ export class Assembler {
     static convertWord(n) {
         if (n > 2147483647) n = 2147483647;
         if (n < -2147483648) n = -2147483648;
-        return (n < 0) ? 4294967296 + n : n;
+        if (n < 0) {
+            return 4294967296 + n;
+        } else {
+            return n;
+        }
     }
 
     static convertHalfword(n) {
         if (n > 32767) n = 32767;
         if (n < -32768) n = -32768;
-        return (n < 0) ? 65536 + n : n;
+        if (n < 0) {
+            return 65536 + n;
+        } else {
+            return n;
+        }
     }
 
     static convertByte(n) {
         if (n > 127) n = 127;
         if (n < -128) n = -128;
-        return (n < 0) ? 256 + n : n;
+        if (n < 0) {
+            return 256 + n;
+        } else {
+            return n;
+        }
     }
 
     // pack string into memory binary
     static packString(str) {
         let i;
-        let n;
         let res = [];
-        n = str.length;
-        for (i = 3; i < n; i += 4) {
+        for (i = 3; i < str.length; i += 4) {
             res.push((str.charCodeAt(i - 3) * 16777216) +
                 (str.charCodeAt(i - 2) << 16) +
                 (str.charCodeAt(i - 1) << 8) +
                 (str.charCodeAt(i)));
         }
-        i = n - i + 3;
+        i = str.length - i + 3;
         if (i == 0) {
             res.push(0);
         } else if (i == 1) {
-            res.push(str.charCodeAt(n - 1) * 16777216);
+            res.push(str.charCodeAt(str.length - 1) * 16777216);
         } else if (i == 2) {
-            res.push(str.charCodeAt(n - 2) * 16777216 +
-                str.charCodeAt(n - 1) << 16);
+            res.push(str.charCodeAt(str.length - 2) * 16777216 +
+                str.charCodeAt(str.length - 1) << 16);
         } else {
-            res.push(str.charCodeAt(n - 3) * 16777216 +
-                (str.charCodeAt(n - 2) << 16) +
-                (str.charCodeAt(n - 1) << 8));
+            res.push(str.charCodeAt(str.length - 3) * 16777216 +
+                (str.charCodeAt(str.length - 2) << 16) +
+                (str.charCodeAt(str.length - 1) << 8));
         }
         return res;
     }
@@ -457,7 +466,7 @@ export class Assembler {
         if(type == '.double') {
             let curToken = tokenList.expect(TOKEN_TYPE.FLOAT);
             if (curToken) {
-                let newData = Assembler.convertSingle(curToken.value);
+                let newData = Assembler.convertDouble(curToken.value);
                 result.size = 8; //size of double is 8 bytes
                 result.data = newData;
             } else {
@@ -541,11 +550,10 @@ export class Assembler {
         let expectedTokens;
         let tmp;
         let type;
-        let i;
         type = -1;
         let result = new InstructionNode(instName, curAddr, Assembler.INST_SIZE, lineno);
         // get instruction format type
-        for (i = 0; i < this.InstructionTypes.INST_TYPE_COUNT; i++) {
+        for (let i = 0; i < this.InstructionTypes.INST_TYPE_COUNT; i++) {
             if (this.InstructionTypes.INST_TYPE_OPS[i].indexOf(instName) >= 0) {
                 type = i;
                 break;
@@ -893,11 +901,7 @@ export class Assembler {
     }
 
     resolveSymbols(list, symbols, aliases) {
-        let n = list.length;
-        let newVal;
-        let needHigh16Bits;
-        let needLow16Bits;
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < list.length; i++) {
             let cur = list[i];
             if (cur.type == NODE_TYPE.DATA) continue;
             if (typeof(cur.rt) == 'string') {
@@ -919,6 +923,9 @@ export class Assembler {
                 cur.fd = this.convertRegName(cur.fd);
             }
             if (typeof(cur.imm) == 'string') {
+                let newVal;
+                let needHigh16Bits;
+                let needLow16Bits;
                 // resolve label
                 // check internal operator
                 if (cur.imm.indexOf('__h16__') == 0) {
