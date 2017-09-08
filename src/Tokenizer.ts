@@ -1,4 +1,4 @@
-export const enum TOKEN_TYPE {
+export enum TOKEN_TYPE {
     SPECIAL,
     LABEL,
     STRING,
