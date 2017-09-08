@@ -27,7 +27,7 @@ export class regexObject {
         this.addRegexLine(TOKEN_TYPE.STRING, /^"(([^\\"]|\\.)*)"/);
         this.addRegexLine(TOKEN_TYPE.COMMA, /^\s*,\s*/);
         this.addRegexLine(TOKEN_TYPE.SPACE, /^\s+/);
-        this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$zero|\$\w{2}\b|\$\w\b)/);
+        this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$zero|\$\w{1,2}\b)/);
         // char is also integer
         this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-*\d*)\((\$\w{1,2}|zero)\)/);
         this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/);
