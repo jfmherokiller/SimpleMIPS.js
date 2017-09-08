@@ -1,4 +1,4 @@
-export enum TOKEN_TYPE {
+export const enum TOKEN_TYPE {
     SPECIAL,
     LABEL,
     STRING,
@@ -8,19 +8,16 @@ export enum TOKEN_TYPE {
     COMOPR,
     INTEGER,
     FLOAT,
+    HEXNUM,
     WORD,
-    ESCAPED,
+    CHAR,
 }
 
 export class regexObject {
-    tokenRegexps: RegExp[] = [];
-    tokenTypeNames: string[] = [];
-    tokenTypeCount: number = 0;
+    ListOfRegexes = [];
 
     addRegexLine(type: TOKEN_TYPE, regex: RegExp) {
-        this.tokenTypeNames.push(type.toString());
-        this.tokenRegexps.push(regex);
-        this.tokenTypeCount++;
+        this.ListOfRegexes[type] = regex;
     }
 
     constructor() {
@@ -32,9 +29,10 @@ export class regexObject {
         this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$zero|\$\w{1,2}\b)/); //$ra
         // char is also integer
         this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-?\d*)\((\$\w{1,2}|\$zero)\)/); // offset(base)
-        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-?\d+)/); // 123456
+        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(?![A-Za-z_+]+)(-?\d+)(?![A-Za-z_+]+)/); // 123456
         this.addRegexLine(TOKEN_TYPE.FLOAT, /^(?![A-Za-z_+]+)(\d+\.\d+)(?![A-Za-z_+]+)/); //1.0
         this.addRegexLine(TOKEN_TYPE.WORD, /^([\w.$]+)(?!:)/); //In$ertD4taH3re
-        this.addRegexLine(TOKEN_TYPE.ESCAPED, /^'([^'\\]|\\*)'/); //'\b\n'
+        this.addRegexLine(TOKEN_TYPE.CHAR, /^'([^'\\]|\\*)'/); //'\b\n'
+        this.addRegexLine(TOKEN_TYPE.HEXNUM, /^(0x[\da-f]+\b)/)
     }
 }

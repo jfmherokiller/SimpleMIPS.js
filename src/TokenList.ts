@@ -23,6 +23,10 @@ export class TokenList {
     prepend(list) {
         this._list = list.concat(this._list);
     }
+    getItem(number)
+    {
+        return this._list[number];
+    }
 
     // expect a specified sequence
     // eg. WORD OPR COMMA OPR

@@ -11,7 +11,7 @@ export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii .float .double'.split(' ');
 
     static INST_SIZE = 4;
-    regexObject;
+    regexObject:regexObject;
     InstructionClasses;
     PiObject;
     InstructionTypes;
@@ -296,8 +296,8 @@ export class Assembler {
         let newNode;
         while (line.length > 0) {
             let flag = false;
-            for (let i = 0; i < this.regexObject.tokenTypeCount; i++) {
-                matches = line.match(this.regexObject.tokenRegexps[i]);
+            for (let i = 0; i < this.regexObject.ListOfRegexes.length; i++) {
+                matches = line.match(this.regexObject.ListOfRegexes[i]);
                 if (matches && matches[0]) {
                     newNode = new ParserNode(i);
                     switch (i) {
@@ -314,7 +314,8 @@ export class Assembler {
                             newNode.value = matches[2].toLowerCase();
                             break;
                         case TOKEN_TYPE.INTEGER:
-                        case TOKEN_TYPE.ESCAPED:
+                        case TOKEN_TYPE.CHAR:
+                        case TOKEN_TYPE.HEXNUM:
                             if (matches[2]) {
                                 // preserve original case for char
                                 newNode.value = matches[2].charCodeAt(0);
@@ -505,7 +506,7 @@ export class Assembler {
                 default :
                     unitSize = 4 // word
             }
-            newData = tokenList.expectList([TOKEN_TYPE.INTEGER,TOKEN_TYPE.ESCAPED], TOKEN_TYPE.COMMA);
+            newData = tokenList.expectList([TOKEN_TYPE.INTEGER,TOKEN_TYPE.CHAR], TOKEN_TYPE.COMMA);
             if (newData) {
                 newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;
@@ -600,7 +601,7 @@ export class Assembler {
                     TOKEN_TYPE.COMMA,
                     TOKEN_TYPE.REGOPR,
                     TOKEN_TYPE.COMMA,
-                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER]
+                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -671,7 +672,7 @@ export class Assembler {
                 expectedTokens = tokenList.expect([
                     TOKEN_TYPE.REGOPR,
                     TOKEN_TYPE.COMMA,
-                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER]
+                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM,TOKEN_TYPE.CHAR]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -866,7 +867,7 @@ export class Assembler {
                 }
             }
             if (!tokenRecognized) {
-                throw new Error('Unexpected syntax near : ' + tokens.get(0).value);
+                throw new Error('Unexpected syntax near : ' + tokens.getItem(0).value);
             }
         }
         return result;

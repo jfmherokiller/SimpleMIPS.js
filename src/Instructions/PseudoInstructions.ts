@@ -34,19 +34,19 @@ export class PseudoInstructions {
         // load address : la $rn, label
         this.addPseudoInstruction("la",
             [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.WORD],
-            ('lui $r1,__h16__{2} ' + 'ori {0},$r1,__l16__{2}'));
+            ('lui $r1,__h16__{2}' + ' ori {0},$r1,__l16__{2}'));
         // load immediate : li $rn, imm32
         this.addPseudoInstruction("li",
             [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.INTEGER],
-            ('lui $r1,{2.H} ' + 'ori {0},$r1,{2.L}'));
+            ('lui $r1,{2.H}' + ' ori {0},$r1,{2.L}'));
         // push register : pushr $rn
         this.addPseudoInstruction("pushr",
             [TOKEN_TYPE.REGOPR],
-            ('sw {0},0($sp)' + 'addi $sp,$sp,-4'));
+            ('sw {0},0($sp)' + ' addi $sp,$sp,-4'));
         // pop to register : pushr $rn
         this.addPseudoInstruction("popr",
             [TOKEN_TYPE.REGOPR],
-            ('lw {0},4($sp)' + 'addi $sp,$sp,4'));
+            ('lw {0},4($sp)' + ' addi $sp,$sp,4'));
     }
 }
 
