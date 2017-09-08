@@ -8,7 +8,7 @@ import {regexObject, TOKEN_TYPE} from "./Tokenizer";
 export enum NODE_TYPE {DATA = 0, TEXT = 1}
 
 export class Assembler {
-    static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii'.split(' ');
+    static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii .float .double'.split(' ');
 
     static INST_SIZE = 4;
     regexObject;
@@ -338,9 +338,20 @@ export class Assembler {
         }
         return tokenList;
     }
-
     static alignSize(size) {
         return 4 * (Math.floor((size - 0.1) / 4.0) + 1);
+    }
+    static convertDouble(n)
+    {
+        let buffer = Buffer.alloc(8);
+        buffer.writeDoubleLE(n,0);
+        return parseInt(buffer.toString('hex'),16)
+    }
+    static convertSingle(n)
+    {
+        let buffer = Buffer.alloc(4);
+        buffer.writeFloatLE(n,0);
+        return parseInt(buffer.toString('hex'),16)
     }
 
     static convertWord(n) {
