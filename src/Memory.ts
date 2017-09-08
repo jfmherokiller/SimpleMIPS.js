@@ -108,8 +108,7 @@ export class Memory {
     dumpToBuffer(start, length, buffer) {
         let si = start;
         let ei = si + length;
-        let j = 0;
-        for (; si < ei; si++, j++) {
+        for (let j = 0; si < ei; si++, j++) {
             buffer[j] = this.getByte(si);
         }
     }
