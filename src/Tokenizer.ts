@@ -30,8 +30,8 @@ export class regexObject {
         this.addRegexLine(TOKEN_TYPE.SPACE, /^\s+/); // ` `
         this.addRegexLine(TOKEN_TYPE.REGOPR, /^(\$zero|\$\w{1,2}\b)/); //$ra
         // char is also integer
-        this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-*\d*)\((\$\w{1,2}|\$zero)\)/); // offset(base)
-        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-*\d+|'([^'\\]|\\*)')/); // 123456
+        this.addRegexLine(TOKEN_TYPE.COMOPR, /^(-?\d*)\((\$\w{1,2}|\$zero)\)/); // offset(base)
+        this.addRegexLine(TOKEN_TYPE.INTEGER, /^(0x[\da-f]+|-?\d+|'([^'\\]|\\*)')/); // 123456
         this.addRegexLine(TOKEN_TYPE.FLOAT, /^(?![A-Za-z_+]+)(\d+\.\d+)(?![A-Za-z_+]+)/); //1.0
         this.addRegexLine(TOKEN_TYPE.WORD, /^([\w.$]+)(?!:)/); //In$ertD4taH3re
     }
