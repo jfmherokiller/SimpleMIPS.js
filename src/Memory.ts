@@ -4,9 +4,9 @@ export class Memory {
     CHUNKSIZE = 65536; // in bytes
     MASK = this.CHUNKSIZE - 1;
     CHUNKWIDTH = 16;
-    latencyCtr:number;
-    latency:number;
-    busy:boolean;
+    latencyCtr: number;
+    latency: number;
+    busy: boolean;
     chunks;
 
     constructor() {
@@ -16,6 +16,7 @@ export class Memory {
         this.latency = 1;
         this.busy = false;
     }
+
     // alignment check should be done in CPU
     // big-endian
     // 0x11223344 -> LAddr 11 22 33 44 HAddr
@@ -32,6 +33,7 @@ export class Memory {
         this.busy = true;
         return chunk;
     }
+
     getWord(addr) {
         let chunk = this.getChunk(addr);
         addr &= this.MASK;
@@ -46,15 +48,18 @@ export class Memory {
             return tmp;
         }
     }
+
     getHalfword(addr) {
         let chunk = this.getChunk(addr);
         addr &= this.MASK;
         return ((chunk[addr] << 8) |
             (chunk[addr + 1]));
     }
+
     getByte(addr) {
         return (this.getChunk(addr)[(addr & this.MASK)]);
     }
+
     setWord(addr, val) {
         let chunk = this.getChunk(addr);
         addr &= this.MASK;
@@ -63,6 +68,7 @@ export class Memory {
         chunk[addr + 2] = (val & 0x0000ff00) >>> 8;
         chunk[addr + 3] = (val & 0x000000ff);
     }
+
     setHalfword(addr, val) {
         let chunk = this.getChunk(addr);
         addr &= this.MASK;
@@ -70,9 +76,11 @@ export class Memory {
         chunk[addr] = (val & 0xff00) >>> 8;
         chunk[addr + 1] = (val & 0x00ff);
     }
+
     setByte(addr, val) {
         this.getChunk(addr)[addr & this.MASK] = (val & 0xff);
     }
+
     // cycle-accurate simulation related methods
     // called every clock cycle
     // cpu should check busy flag before read/write
@@ -85,6 +93,7 @@ export class Memory {
             }
         }
     }
+
     // debug methods
     dump(start, nrow, ncol) {
         let n = nrow * ncol;
@@ -103,6 +112,7 @@ export class Memory {
         }
         return result;
     }
+
     // dump to array, length in bytes
     // unpacked dump
     dumpToBuffer(start, length, buffer) {
@@ -112,18 +122,19 @@ export class Memory {
             buffer[j] = this.getByte(si);
         }
     }
+
     importAsm(asmResult) {
-        let i;
-        let j;
-        let si = asmResult.dataStart;
-        let ei = si + asmResult.dataSize;
-        for (i = si, j = 0; i < ei; i += 4, j++) {
-            this.setWord(i, asmResult.dataMem[j]);
+        let startIndex = asmResult.dataStart;
+        let endIndex = startIndex + asmResult.dataSize;
+        for (let i = startIndex; i < endIndex; i += 4) {
+            let memory_block = ((i - startIndex) / 4);
+            this.setWord(i, asmResult.dataMem[memory_block]);
         }
-        si = asmResult.textStart;
-        ei = si + asmResult.textSize;
-        for (i = si, j = 0; i < ei; i += 4, j++) {
-            this.setWord(i, asmResult.textMem[j]);
+        startIndex = asmResult.textStart;
+        endIndex = startIndex + asmResult.textSize;
+        for (let i = startIndex; i < endIndex; i += 4) {
+            let memory_block = ((i - startIndex) / 4);
+            this.setWord(i, asmResult.textMem[memory_block]);
         }
     }
 }
