@@ -37,5 +37,6 @@
     ],
     "all": true,
     "cache":true
-  }
+  },
+  "keywords": ["mips","typescript","assembler","simulator"]
 }
