@@ -510,7 +510,7 @@ export class Assembler {
                 default :
                     unitSize = 4 // word
             }
-            newData = tokenList.expectList([TOKEN_TYPE.INTEGER, TOKEN_TYPE.CHAR], TOKEN_TYPE.COMMA);
+            newData = tokenList.expectList([TOKEN_TYPE.INTEGER, TOKEN_TYPE.CHAR,TOKEN_TYPE.HEXNUM], TOKEN_TYPE.COMMA);
             if (newData) {
                 newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;
@@ -554,9 +554,7 @@ export class Assembler {
     // create an instruction node for future translation
     createInstructionNode(tokenList, instName, curAddr, lineno) {
         let expectedTokens;
-        let tmp;
-        let type;
-        type = -1;
+        let type = -1;
         let result = new InstructionNode(instName, curAddr, Assembler.INST_SIZE, lineno);
         // get instruction format type
         for (let i = 0; i < this.InstructionTypes.INST_TYPE_COUNT; i++) {
@@ -611,7 +609,7 @@ export class Assembler {
                     result.rt = expectedTokens[0].value;
                     result.rs = expectedTokens[2].value;
                     // check range
-                    tmp = expectedTokens[4].value;
+                    let tmp = expectedTokens[4].value;
                     if (this.checkImmediateRange(tmp, instName)) {
                         result.imm = tmp;
                     }
@@ -631,7 +629,7 @@ export class Assembler {
                     result.rd = expectedTokens[0].value;
                     result.rt = expectedTokens[2].value;
                     // check range
-                    tmp = expectedTokens[4].value;
+                    let tmp = expectedTokens[4].value;
                     if (this.checkImmediateRange(tmp, instName)) {
                         result.imm = tmp;
                     }
@@ -649,7 +647,7 @@ export class Assembler {
                     result.rt = expectedTokens[0].value;
                     result.rs = expectedTokens[2].value;
                     // check offset range
-                    tmp = expectedTokens[2].offset;
+                    let tmp = expectedTokens[2].offset;
                     if (tmp >= -32768 && tmp < 32768) {
                         result.imm = tmp;
                     } else {
@@ -663,7 +661,7 @@ export class Assembler {
                 expectedTokens = tokenList.expect([
                     TOKEN_TYPE.REGOPR,
                     TOKEN_TYPE.COMMA,
-                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER]
+                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM,TOKEN_TYPE.CHAR]
                 ]);
                 if (expectedTokens) {
                     result.rs = expectedTokens[0].value;
