@@ -779,82 +779,97 @@ export class Assembler {
     //  when text include inst, rs, rd, rt, imm
     // }
     parseLine(tokens, lineno, symbols, status) {
-        let curToken;
-        let flag;
-        let tokenRecognized;
-        let inst;
-        let idx;
-        let tmp;
-        let result:Array<InstructionNode|DataNode> = [];
+        let result: Array<InstructionNode | DataNode> = [];
         while (tokens.getLength() > 0) {
             // consume white space
             tokens.expect(TOKEN_TYPE.SPACE);
-            tokenRecognized = false;
-            // label
-            curToken = tokens.expect(TOKEN_TYPE.LABEL);
-            if (curToken) {
-                // consume white space
-                tokens.expect(TOKEN_TYPE.SPACE);
-                if (symbols[curToken.value]) {
-                    throw new Error('Symbol "' + curToken.value + '" is redefined!');
-                } else {
-                    symbols[curToken.value] = (status.section == 'text') ?
-                        status.textCurrentAddr : status.dataCurrentAddr;
-                }
-                tokenRecognized = true;
-            }
-            const __ret = this.ParseSpecialTokens(tokens, status, lineno, result, tokenRecognized);
-            tokenRecognized = __ret.tokenRecognized;
-            result = __ret.result;
-            status = __ret.status;
-            // instructions
-            curToken = tokens.expect(TOKEN_TYPE.WORD);
-            if (curToken) {
-                if (status.section != 'text') {
-                    throw new Error('Instructions cannot be put into data section.')
-                }
-                // consume white space
-                tokens.expect(TOKEN_TYPE.SPACE);
-                tokenRecognized = true;
-                inst = curToken.value;
-                flag = false;
-                // check if it is pseudo instruction
-                if ((idx = this.PiObject.PI_NAMES.indexOf(inst)) >= 0) {
-                    if (this.PiObject.SHARED_INST.indexOf(inst) >= 0) {
-                        // attempt to interpret as pseudo instruction first
-                        // if name conflict found
-                        if (tokens.expect(this.PiObject.PI_EXPECTS[idx], true)) {
-                            tokens.prepend(this.expandPseudoInstruction(tokens, idx));
-                            flag = true;
-                        }
-                        // unable to interpret as pseudo instruction
-                        // pass to normal interpreter
-                    } else {
-                        // expand normal pseudo instruction
-                        // prepend new tokens to the beginning
-                        tokens.prepend(this.expandPseudoInstruction(tokens, idx));
-                        flag = true;
-                    }
-
-                }
-                if (!flag) {
-                    // interpret as normal instruction
-                    tmp = this.createInstructionNode(tokens, curToken.value, status.textCurrentAddr, lineno);
-                    status.textCurrentAddr += tmp.size; // update global text pointer address
-                    status.textSize += tmp.size;
-                    result.push(tmp);
-                }
-            }
-            if (!tokenRecognized) {
+            //consume tokens
+            if (
+                //check for labels
+                this.ParseLabels(tokens, symbols, status) ||
+                //check for directives
+                this.ParseSpecialTokens(tokens, status, lineno, result) ||
+                //check for instructions
+                this.ParseInstructions(tokens, status, lineno, result)) {
+            } else {
                 throw new Error('Unexpected syntax near : ' + tokens.getItem(0).value);
             }
         }
         return result;
     }
 
-    private ParseSpecialTokens(tokens, status, lineno, result, tokenRecognized) {
+    private ParseLabels(tokens, symbols, status) {
+        // label
+        let tokenRecognized = false;
+        let curToken = tokens.expect(TOKEN_TYPE.LABEL);
+        if (curToken) {
+            // consume white space
+            tokens.expect(TOKEN_TYPE.SPACE);
+            if (symbols[curToken.value]) {
+                throw new Error('Symbol "' + curToken.value + '" is redefined!');
+            } else {
+                if (status.section == 'text') {
+                    symbols[curToken.value] = status.textCurrentAddr;
+                } else {
+                    symbols[curToken.value] = status.dataCurrentAddr;
+                }
+            }
+            tokenRecognized = true;
+        }
+        return tokenRecognized;
+    }
+
+    private ParseInstructions(tokens, status, lineno, result) {
+        // instructions
+        let tmp;
+        let idx;
+        let inst;
+        let flag;
+        let tokenRecognized = false;
+        let curToken = tokens.expect(TOKEN_TYPE.WORD);
+        if (curToken) {
+            if (status.section != 'text') {
+                throw new Error('Instructions cannot be put into data section.')
+            }
+            // consume white space
+            tokens.expect(TOKEN_TYPE.SPACE);
+            tokenRecognized = true;
+            inst = curToken.value;
+            flag = false;
+            // check if it is pseudo instruction
+            if ((idx = this.PiObject.PI_NAMES.indexOf(inst)) >= 0) {
+                if (this.PiObject.SHARED_INST.indexOf(inst) >= 0) {
+                    // attempt to interpret as pseudo instruction first
+                    // if name conflict found
+                    if (tokens.expect(this.PiObject.PI_EXPECTS[idx], true)) {
+                        tokens.prepend(this.expandPseudoInstruction(tokens, idx));
+                        flag = true;
+                    }
+                    // unable to interpret as pseudo instruction
+                    // pass to normal interpreter
+                } else {
+                    // expand normal pseudo instruction
+                    // prepend new tokens to the beginning
+                    tokens.prepend(this.expandPseudoInstruction(tokens, idx));
+                    flag = true;
+                }
+
+            }
+            if (!flag) {
+                // interpret as normal instruction
+                tmp = this.createInstructionNode(tokens, curToken.value, status.textCurrentAddr, lineno);
+                status.textCurrentAddr += tmp.size; // update global text pointer address
+                status.textSize += tmp.size;
+                result.push(tmp);
+            }
+        }
+        return tokenRecognized;
+    }
+
+    private ParseSpecialTokens(tokens, status, lineno, result) {
         // specials
         let tmp;
+        let tokenRecognized = false;
         let curToken = tokens.expect(TOKEN_TYPE.SPECIAL);
         if (curToken) {
             // consume white space
@@ -883,7 +898,7 @@ export class Assembler {
             }
             tokenRecognized = true;
         }
-        return {tokenRecognized,result,status};
+        return tokenRecognized;
     }
 
     Float_regAliases = (
