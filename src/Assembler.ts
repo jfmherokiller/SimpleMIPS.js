@@ -7,6 +7,20 @@ import {regexObject, TOKEN_TYPE} from "./Tokenizer";
 
 export enum NODE_TYPE {DATA = 0, TEXT = 1}
 
+export interface AsssembledCode {
+    dataStart: number;
+    textStart: number;
+    dataSize: number;
+    textSize: number;
+    dataMem: number[];
+    textMem: any[];
+    sourceMap: number[];
+    symbolTable: {};
+}
+export interface AssemblerConfigObject {
+    textStartAddr:number
+    dataStartAddr:number
+}
 export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii .float .double'.split(' ');
 
@@ -218,64 +232,63 @@ export class Assembler {
 
     // return data, memory array, their size and offset,
     // and source map
-    assemble(src, config?) {
-        let lines = Assembler.preprocess(src);
-        let symbolTable = {};
-        let statusTable = {
-            section: 'text',
-            textSize: 0,
-            dataSize: 0,
-            dataStartAddr: 0,	// data section start address
-            dataCurrentAddr: 0,	// data section current address
-            textStartAddr: 0,	// text section start address
-            textCurrentAddr: 0		// text section current address
-        };
-        let aliasTable = {};
-        let curTokenList;
-        let infoList = [];
-        config = Lib.extend({}, config);
-        // apply user defined properties
-        statusTable.dataStartAddr = (config.dataStartAddr != undefined) ? config.dataStartAddr : 0x10000000;
-        statusTable.textStartAddr = (config.textStartAddr != undefined) ? config.textStartAddr : 0x00040000;
-        statusTable.dataCurrentAddr = statusTable.dataStartAddr;
-        statusTable.textCurrentAddr = statusTable.textStartAddr;
-        // generate infomation list
-        for (let i = 0; i < lines.length; i++) {
-            try {
-                curTokenList = this.tokenize(lines[i]);
-                infoList.push.apply(infoList, this.parseLine(curTokenList, i + 1, symbolTable, statusTable));
-            } catch (err) {
-                throw new Error('L' + (i + 1) + ':' + err.message).stack = err.stack;
-            }
+    assemble(src, config?: AssemblerConfigObject): AsssembledCode {
+    let lines = Assembler.preprocess(src);
+    let symbolTable = {};
+    let statusTable = {
+        section: 'text',
+        textSize: 0,
+        dataSize: 0,
+        dataStartAddr: 0,	// data section start address
+        dataCurrentAddr: 0,	// data section current address
+        textStartAddr: 0,	// text section start address
+        textCurrentAddr: 0		// text section current address
+    };
+    let aliasTable = {};
+    let curTokenList;
+    let infoList = [];
+    config = Lib.extend({}, config);
+    // apply user defined properties
+    statusTable.dataStartAddr = (config.dataStartAddr != undefined) ? config.dataStartAddr : 0x10000000;
+    statusTable.textStartAddr = (config.textStartAddr != undefined) ? config.textStartAddr : 0x00040000;
+    statusTable.dataCurrentAddr = statusTable.dataStartAddr;
+    statusTable.textCurrentAddr = statusTable.textStartAddr;
+    // generate infomation list
+    for (let i = 0; i < lines.length; i++) {
+        try {
+            curTokenList = this.tokenize(lines[i]);
+            infoList.push.apply(infoList, this.parseLine(curTokenList, i + 1, symbolTable, statusTable));
+        } catch (err) {
+            throw new Error('L' + (i + 1) + ':' + err.message).stack = err.stack;
         }
-        //console.log(infoList);
-        // resolve symbols and alias
-        this.resolveSymbols(infoList, symbolTable, statusTable);
-
-        // translate
-        // check section confliction
-        let dStart = statusTable.dataStartAddr;
-        let dEnd = statusTable.dataStartAddr + statusTable.dataSize;
-        let tStart = statusTable.textStartAddr;
-        let tEnd = statusTable.textStartAddr + statusTable.textSize;
-        if (!(dEnd < tStart || dStart > tEnd)) {
-            throw new Error('Overlap detected between data section and text section.');
-        }
-        let dataMem = [];
-        let textMem = [];
-        this.translate(infoList, textMem, dataMem, statusTable);
-
-        return {
-            dataStart: statusTable.dataStartAddr,
-            textStart: statusTable.textStartAddr,
-            dataSize: statusTable.dataSize,
-            textSize: statusTable.textSize,
-            dataMem: dataMem,
-            textMem: textMem,
-            sourceMap: Assembler.generateSourceMap(infoList, statusTable),
-            symbolTable: symbolTable
-        };
     }
+    //console.log(infoList);
+    // resolve symbols and alias
+    this.resolveSymbols(infoList, symbolTable, statusTable);
+
+    // translate
+    // check section confliction
+    let dStart = statusTable.dataStartAddr;
+    let dEnd = statusTable.dataStartAddr + statusTable.dataSize;
+    let tStart = statusTable.textStartAddr;
+    let tEnd = statusTable.textStartAddr + statusTable.textSize;
+    if (!(dEnd < tStart || dStart > tEnd)) {
+        throw new Error('Overlap detected between data section and text section.');
+    }
+    let dataMem = [];
+    let textMem = [];
+    this.translate(infoList, textMem, dataMem, statusTable);
+        return {
+        dataStart: statusTable.dataStartAddr,
+        textStart: statusTable.textStartAddr,
+        dataSize: statusTable.dataSize,
+        textSize: statusTable.textSize,
+        dataMem: dataMem,
+        textMem: textMem,
+        sourceMap: Assembler.generateSourceMap(infoList, statusTable),
+        symbolTable: symbolTable
+    };
+}
 
     // strip off comments and split into tokens
     static preprocess(src) {

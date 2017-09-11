@@ -123,7 +123,7 @@ export class Instructions {
     }
 }
 
-class CPUInstrclass {
+export class CPUInstrclass {
     INST_CAT = {	// instruction categorized by assembly format
         RRR: [],
         RRI: [],

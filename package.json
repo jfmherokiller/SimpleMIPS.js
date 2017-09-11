@@ -16,7 +16,8 @@
   },
   "scripts": {
     "test": "nyc mocha",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov"
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "prepare": "tsc -p ./ --declaration true --outDir dist"
   },
   "repository": {
     "type": "git",
@@ -36,7 +37,17 @@
       "others"
     ],
     "all": true,
-    "cache":true
+    "cache": true
   },
-  "keywords": ["mips","typescript","assembler","simulator"]
+  "keywords": [
+    "mips",
+    "typescript",
+    "assembler",
+    "simulator"
+  ],
+  "bugs": "https://github.com/jfmherokiller/SimpleMIPS.js/issues",
+  "directories": {
+    "test": "test"
+  },
+  "main": "dist/index.js"
 }
