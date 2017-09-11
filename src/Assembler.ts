@@ -786,11 +786,11 @@ export class Assembler {
             //consume tokens
             if (
                 //check for labels
-                this.ParseLabels(tokens, symbols, status) ||
-                //check for directives
-                this.ParseSpecialTokens(tokens, status, lineno, result) ||
-                //check for instructions
-                this.ParseInstructions(tokens, status, lineno, result)) {
+            this.ParseLabels(tokens, symbols, status) ||
+            //check for directives
+            this.ParseSpecialTokens(tokens, status, lineno, result) ||
+            //check for instructions
+            this.ParseInstructions(tokens, status, lineno, result)) {
             } else {
                 throw new Error('Unexpected syntax near : ' + tokens.getItem(0).value);
             }
@@ -821,10 +821,6 @@ export class Assembler {
 
     private ParseInstructions(tokens, status, lineno, result) {
         // instructions
-        let tmp;
-        let idx;
-        let inst;
-        let flag;
         let tokenRecognized = false;
         let curToken = tokens.expect(TOKEN_TYPE.WORD);
         if (curToken) {
@@ -834,10 +830,11 @@ export class Assembler {
             // consume white space
             tokens.expect(TOKEN_TYPE.SPACE);
             tokenRecognized = true;
-            inst = curToken.value;
-            flag = false;
+            let inst = curToken.value;
+            let flag = false;
+            let idx = this.PiObject.PI_NAMES.indexOf(inst);
             // check if it is pseudo instruction
-            if ((idx = this.PiObject.PI_NAMES.indexOf(inst)) >= 0) {
+            if (idx >= 0) {
                 if (this.PiObject.SHARED_INST.indexOf(inst) >= 0) {
                     // attempt to interpret as pseudo instruction first
                     // if name conflict found
@@ -857,7 +854,7 @@ export class Assembler {
             }
             if (!flag) {
                 // interpret as normal instruction
-                tmp = this.createInstructionNode(tokens, curToken.value, status.textCurrentAddr, lineno);
+                let tmp = this.createInstructionNode(tokens, curToken.value, status.textCurrentAddr, lineno);
                 status.textCurrentAddr += tmp.size; // update global text pointer address
                 status.textSize += tmp.size;
                 result.push(tmp);
@@ -868,7 +865,6 @@ export class Assembler {
 
     private ParseSpecialTokens(tokens, status, lineno, result) {
         // specials
-        let tmp;
         let tokenRecognized = false;
         let curToken = tokens.expect(TOKEN_TYPE.SPECIAL);
         if (curToken) {
@@ -889,7 +885,7 @@ export class Assembler {
                     throw new Error('Cannot allocate data in text section.')
                 }
                 // allocate storage
-                tmp = Assembler.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
+                let tmp = Assembler.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
                 status.dataCurrentAddr += tmp.size; // update global data pointer address
                 status.dataSize += tmp.size;
                 result.push(tmp);
@@ -902,8 +898,7 @@ export class Assembler {
     }
 
 
-
-    convertRegName(regname) {
+    static convertRegName(regname) {
         const Float_regAliases = (
             '$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,' +
             '$f8,$f9,$f10,$f11,$f12,$f13,$f14,$f15,' +
@@ -938,22 +933,22 @@ export class Assembler {
             let cur = list[i];
             if (cur.type == NODE_TYPE.DATA) continue;
             if (typeof(cur.rt) == 'string') {
-                cur.rt = this.convertRegName(cur.rt);
+                cur.rt = Assembler.convertRegName(cur.rt);
             }
             if (typeof(cur.rs) == 'string') {
-                cur.rs = this.convertRegName(cur.rs);
+                cur.rs = Assembler.convertRegName(cur.rs);
             }
             if (typeof(cur.rd) == 'string') {
-                cur.rd = this.convertRegName(cur.rd);
+                cur.rd = Assembler.convertRegName(cur.rd);
             }
             if (typeof(cur.ft) == 'string') {
-                cur.ft = this.convertRegName(cur.ft);
+                cur.ft = Assembler.convertRegName(cur.ft);
             }
             if (typeof(cur.fs) == 'string') {
-                cur.fs = this.convertRegName(cur.fs);
+                cur.fs = Assembler.convertRegName(cur.fs);
             }
             if (typeof(cur.fd) == 'string') {
-                cur.fd = this.convertRegName(cur.fd);
+                cur.fd = Assembler.convertRegName(cur.fd);
             }
             if (typeof(cur.imm) == 'string') {
                 let newVal;
@@ -1034,6 +1029,4 @@ export class Assembler {
         }
         return ListOfLineNumbers;
     }
-
-
 }
