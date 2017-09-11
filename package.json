@@ -1,5 +1,5 @@
 {
-  "name": "mips_assembler",
+  "name": "mips_assembler_simulator",
   "version": "1.0.0",
   "dependencies": {},
   "devDependencies": {
