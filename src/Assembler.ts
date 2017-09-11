@@ -11,7 +11,7 @@ export class Assembler {
     static STORAGE_TYPES = '.space .byte .word .halfword .asciiz .ascii .float .double'.split(' ');
 
     static INST_SIZE = 4;
-    regexObject:regexObject;
+    regexObject: regexObject;
     InstructionClasses;
     PiObject;
     InstructionTypes;
@@ -342,20 +342,21 @@ export class Assembler {
         }
         return tokenList;
     }
+
     static alignSize(size) {
         return 4 * (Math.floor((size - 0.1) / 4.0) + 1);
     }
-    static convertDouble(n)
-    {
+
+    static convertDouble(n) {
         let buffer = Buffer.alloc(8);
-        buffer.writeDoubleLE(n,0);
-        return parseInt(buffer.toString('hex'),16)
+        buffer.writeDoubleLE(n, 0);
+        return parseInt(buffer.toString('hex'), 16)
     }
-    static convertSingle(n)
-    {
+
+    static convertSingle(n) {
         let buffer = Buffer.alloc(4);
-        buffer.writeFloatLE(n,0);
-        return parseInt(buffer.toString('hex'),16)
+        buffer.writeFloatLE(n, 0);
+        return parseInt(buffer.toString('hex'), 16)
     }
 
     static convertWord(n) {
@@ -458,7 +459,7 @@ export class Assembler {
         let unitSize;
         let newData;
         let result = new DataNode(lineno, curAddr);
-        if(type == '.float') {
+        if (type == '.float') {
             let curToken = tokenList.expect(TOKEN_TYPE.FLOAT);
             if (curToken) {
                 let newData = Assembler.convertSingle(curToken.value);
@@ -468,7 +469,7 @@ export class Assembler {
                 throw new Error('Invalid float directive');
             }
         }
-        if(type == '.double') {
+        if (type == '.double') {
             let curToken = tokenList.expect(TOKEN_TYPE.FLOAT);
             if (curToken) {
                 let newData = Assembler.convertDouble(curToken.value);
@@ -509,7 +510,7 @@ export class Assembler {
                 default :
                     unitSize = 4 // word
             }
-            newData = tokenList.expectList([TOKEN_TYPE.INTEGER,TOKEN_TYPE.CHAR], TOKEN_TYPE.COMMA);
+            newData = tokenList.expectList([TOKEN_TYPE.INTEGER, TOKEN_TYPE.CHAR], TOKEN_TYPE.COMMA);
             if (newData) {
                 newData = Assembler.packIntegers(newData, unitSize);
                 result.size = newData.length * 4;
@@ -604,7 +605,7 @@ export class Assembler {
                     TOKEN_TYPE.COMMA,
                     TOKEN_TYPE.REGOPR,
                     TOKEN_TYPE.COMMA,
-                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM]
+                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER, TOKEN_TYPE.HEXNUM]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -675,7 +676,7 @@ export class Assembler {
                 expectedTokens = tokenList.expect([
                     TOKEN_TYPE.REGOPR,
                     TOKEN_TYPE.COMMA,
-                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM,TOKEN_TYPE.CHAR]
+                    [TOKEN_TYPE.WORD, TOKEN_TYPE.INTEGER, TOKEN_TYPE.HEXNUM, TOKEN_TYPE.CHAR]
                 ]);
                 if (expectedTokens) {
                     result.rt = expectedTokens[0].value;
@@ -716,7 +717,7 @@ export class Assembler {
                 break;
             case this.InstructionTypes.INST_TYPES.FSRRR:
                 expectedTokens = tokenList.expect([
-                    TOKEN_TYPE.REGOPR,TOKEN_TYPE.COMMA,TOKEN_TYPE.REGOPR,TOKEN_TYPE.COMMA,TOKEN_TYPE.REGOPR
+                    TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR
                 ]);
                 if (expectedTokens) {
                     result.fd = expectedTokens[0].value;
@@ -784,7 +785,7 @@ export class Assembler {
         let inst;
         let idx;
         let tmp;
-        let result = [];
+        let result:Array<InstructionNode|DataNode> = [];
         while (tokens.getLength() > 0) {
             // consume white space
             tokens.expect(TOKEN_TYPE.SPACE);
@@ -802,35 +803,10 @@ export class Assembler {
                 }
                 tokenRecognized = true;
             }
-            // specials
-            curToken = tokens.expect(TOKEN_TYPE.SPECIAL);
-            if (curToken) {
-                // consume white space
-                tokens.expect(TOKEN_TYPE.SPACE);
-                if (curToken.value == '.globl') {
-                    //consume the globl token in a noop
-                    tokens.expect(TOKEN_TYPE.SPACE);
-                    tokens.expect(TOKEN_TYPE.WORD);
-                } else if (curToken.value == '.data' || curToken.value === '.kdata') {
-                    // change to data section
-                    status.section = 'data';
-                } else if (curToken.value == '.text' || curToken.value === '.ktext') {
-                    // change to text section
-                    status.section = 'text';
-                } else if (Assembler.STORAGE_TYPES.indexOf(curToken.value) >= 0) {
-                    if (status.section != 'data') {
-                        throw new Error('Cannot allocate data in text section.')
-                    }
-                    // allocate storage
-                    tmp = Assembler.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
-                    status.dataCurrentAddr += tmp.size; // update global data pointer address
-                    status.dataSize += tmp.size;
-                    result.push(tmp);
-                } else {
-                    throw new Error('Unexpected syntax near ' + curToken.value);
-                }
-                tokenRecognized = true;
-            }
+            const __ret = this.ParseSpecialTokens(tokens, status, lineno, result, tokenRecognized);
+            tokenRecognized = __ret.tokenRecognized;
+            result = __ret.result;
+            status = __ret.status;
             // instructions
             curToken = tokens.expect(TOKEN_TYPE.WORD);
             if (curToken) {
@@ -875,6 +851,41 @@ export class Assembler {
         }
         return result;
     }
+
+    private ParseSpecialTokens(tokens, status, lineno, result, tokenRecognized) {
+        // specials
+        let tmp;
+        let curToken = tokens.expect(TOKEN_TYPE.SPECIAL);
+        if (curToken) {
+            // consume white space
+            tokens.expect(TOKEN_TYPE.SPACE);
+            if (curToken.value == '.globl') {
+                //consume the globl token in a noop
+                tokens.expect(TOKEN_TYPE.SPACE);
+                tokens.expect(TOKEN_TYPE.WORD);
+            } else if (curToken.value == '.data' || curToken.value === '.kdata') {
+                // change to data section
+                status.section = 'data';
+            } else if (curToken.value == '.text' || curToken.value === '.ktext') {
+                // change to text section
+                status.section = 'text';
+            } else if (Assembler.STORAGE_TYPES.indexOf(curToken.value) >= 0) {
+                if (status.section != 'data') {
+                    throw new Error('Cannot allocate data in text section.')
+                }
+                // allocate storage
+                tmp = Assembler.createDataNode(tokens, curToken.value, status.dataCurrentAddr, lineno);
+                status.dataCurrentAddr += tmp.size; // update global data pointer address
+                status.dataSize += tmp.size;
+                result.push(tmp);
+            } else {
+                throw new Error('Unexpected syntax near ' + curToken.value);
+            }
+            tokenRecognized = true;
+        }
+        return {tokenRecognized,result,status};
+    }
+
     Float_regAliases = (
         '$f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,' +
         '$f8,$f9,$f10,$f11,$f12,$f13,$f14,$f15,' +
@@ -884,6 +895,7 @@ export class Assembler {
         '$t0 $t1 $t2 $t3 $t4 $t5 $t6 $t7 ' +
         '$s0 $s1 $s2 $s3 $s4 $s5 $s6 $s7 ' +
         '$t8 $t9 $k0 $k1 $gp $sp $fp $ra').split(' ');
+
     convertRegName(regname) {
         // GPRs only
         let idx;
@@ -891,7 +903,7 @@ export class Assembler {
             return 0;
         } else if ((idx = this.GRP_regAliases.indexOf(regname)) >= 0) {
             return idx;
-        } else if  ((idx = this.Float_regAliases.indexOf(regname)) >= 0) {
+        } else if ((idx = this.Float_regAliases.indexOf(regname)) >= 0) {
             return idx;
         } else {
             let match = regname.match(/\d+/),
