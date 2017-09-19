@@ -86,7 +86,7 @@ export class FPU {
         let ans = -(arg1);
         this.inject_double(rd,ans);
     }
-//single ops
+    //single ops
     //rd = rs + rt
     add_single(rd,rt,rs)
     {

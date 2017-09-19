@@ -47,6 +47,10 @@ export class PseudoInstructions {
         this.addPseudoInstruction("popr",
             [TOKEN_TYPE.REGOPR],
             ('lw {0},4($sp)' + ' addi $sp,$sp,4'));
+        // unconditional branch
+        this.addPseudoInstruction("b",
+            [TOKEN_TYPE.WORD],
+            ('BEQ r0, r0, {0}'));
     }
 }
 
