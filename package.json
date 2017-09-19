@@ -49,5 +49,5 @@
   "directories": {
     "test": "test"
   },
-  "main": "dist/index.js"
+  "main": "dist/src/index.js"
 }
