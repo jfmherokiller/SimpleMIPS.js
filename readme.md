@@ -11,7 +11,7 @@ List of Currently Implemented instructions:
 - **Logical operations**: and, andi, or, ori, xor, xori, nor, sll, sllv, srl, sra, srlv, srav
 - **Jump**: j, jr,jal,
 - **Conditional branch**: beq, bne, blez, bgtz, bltz, bgez,bltzal,bgezal
-- **Misc/Pseudo instructions**: nop, break, print prints, printm
+- **Misc/Pseudo instructions**: nop, break, print prints, printm,b,la,popr,pushr,li
 <!---
 It should be noted that the detailed 5-stage pipeline implementation does not reflect any real MIPS processor. It is my own implantation for my course project, where the branching logic was put in the instruction decoding stage. The memory model is also ideal so there is no additional delay in the writeback stage.
 
