@@ -37,7 +37,7 @@ export class PseudoInstructions {
             ('lui $r1,__h16__{2}' + ' ori {0},$r1,__l16__{2}'));
         // load immediate : li $rn, imm32
         this.addPseudoInstruction("li",
-            [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.INTEGER],
+            [TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, [TOKEN_TYPE.INTEGER,TOKEN_TYPE.HEXNUM,TOKEN_TYPE.CHAR]],
             ('lui $r1,{2.H}' + ' ori {0},$r1,{2.L}'));
         // push register : pushr $rn
         this.addPseudoInstruction("pushr",
