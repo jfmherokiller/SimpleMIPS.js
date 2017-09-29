@@ -1,4 +1,3 @@
-
 import {FPU_format} from "./index";
 import {Lib} from "../Lib";
 
@@ -18,8 +17,8 @@ export class Instructions {
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
         'mtlo': ['0000 00ss sss0 0000 0000 0000 0001 0011', 'RS', 'S'],
-        'mtc0':['0100 0000 100s ssss dddd d000 0000 0iii','RRI','N'], // CPR[0,rd,sel] ← data
-        'mtc1':['0100 0100 100t tttt ssss s000 0000 0000','RR','N'], //move word from rt to float reg fs;fs ← rt
+        'mtc0': ['0100 0000 100s ssss dddd d000 0000 0iii', 'RRI', 'N'], // CPR[0,rd,sel] ← data
+        'mtc1': ['0100 0100 100t tttt ssss s000 0000 0000', 'RR', 'N'], //move word from rt to float reg fs;fs ← rt
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
@@ -76,34 +75,66 @@ export class Instructions {
         // floating point stuff
         // @Todo
     };
+
     static floatingpoint_instructions() {
         let newbases = {};
         let instruction_bases = [
             //arithmatic
-            ['abs.','0100 01ff fff0 0000 ssss sddd dd00 0101','FSRR','N'],
-            ['add.','0100 01ff ffft tttt ssss sddd dd00 0000','FSRRR','N'],
-            ['ceil.w.','0100 01ff fff0 0000 ssss sddd dd00 1110','FSRR','N'],
-            ['cvt.d.','0100 01ff fff0 0000 ssss sddd dd10 0001','FSRR','N'],
-            ['cvt.s.','0100 01ff fff0 0000 ssss sddd dd10 0000','FSRR','N'],
-            ['cvt.w.','0100 01ff fff0 0000 ssss sddd dd10 0100','FSRR','N'],
-            ['div.','0100 01ff ffft tttt ssss sddd dd00 0011','FSRRR','N'],
-            ['mul.','0100 01ff ffft tttt ssss sddd dd00 0010','FSRRR','N'],
-            ['floor.w.','0100 01ff fff0 0000 ssss sddd dd00 1111','FSRR','N'],
-            ['round.w.','0100 01ff fff0 0000 ssss sddd dd00 1100','FSRR','N'],
-            ['sqrt.','0100 01ff fff0 0000 ssss sddd dd00 0100','FSRR','N'],
-            ['sub.','0100 01ff ffft tttt ssss sddd dd00 0001','FSRRR','N'],
-            ['trunc.w.','0100 01ff fff0 0000 ssss sddd dd00 1101','FSRR','N'],
+            ['abs.', '0100 01ff fff0 0000 ssss sddd dd00 0101', 'FSRR', 'N'],
+            ['add.', '0100 01ff ffft tttt ssss sddd dd00 0000', 'FSRRR', 'N'],
+            ['ceil.w.', '0100 01ff fff0 0000 ssss sddd dd00 1110', 'FSRR', 'N'],
+            ['cvt.d.', '0100 01ff fff0 0000 ssss sddd dd10 0001', 'FSRR', 'N'],
+            ['cvt.s.', '0100 01ff fff0 0000 ssss sddd dd10 0000', 'FSRR', 'N'],
+            ['cvt.w.', '0100 01ff fff0 0000 ssss sddd dd10 0100', 'FSRR', 'N'],
+            ['div.', '0100 01ff ffft tttt ssss sddd dd00 0011', 'FSRRR', 'N'],
+            ['mul.', '0100 01ff ffft tttt ssss sddd dd00 0010', 'FSRRR', 'N'],
+            ['floor.w.', '0100 01ff fff0 0000 ssss sddd dd00 1111', 'FSRR', 'N'],
+            ['round.w.', '0100 01ff fff0 0000 ssss sddd dd00 1100', 'FSRR', 'N'],
+            ['sqrt.', '0100 01ff fff0 0000 ssss sddd dd00 0100', 'FSRR', 'N'],
+            ['sub.', '0100 01ff ffft tttt ssss sddd dd00 0001', 'FSRRR', 'N'],
+            ['trunc.w.', '0100 01ff fff0 0000 ssss sddd dd00 1101', 'FSRR', 'N'],
             //movement
-            ['mov.','0100 01ff fff0 0000 ssss sddd dd00 0110','FSRR','N'],
+            ['mov.', '0100 01ff fff0 0000 ssss sddd dd00 0110', 'FSRR', 'N'],
             //logical
-            ['neg.','0100 01ff fff0 0000 ssss sddd dd00 0111','FSRR','N'],
+            ['neg.', '0100 01ff fff0 0000 ssss sddd dd00 0111', 'FSRR', 'N'],
+            //comparison
+            ['c.cond.', '0100 01ff ffft tttt ssss sCCC 0011 OOOO', 'FSCRR', 'N']
         ];
-        for(let inst of instruction_bases) {
-            for(let datatype of 'd,s'.split(',')) {
-                let newinst = inst.slice();
-                newinst[0] = inst[0] + datatype;
-                newbases[newinst[0]] = newinst.slice(1);
+        for (let inst of instruction_bases) {
+            if (inst[0].indexOf("c.cond") !== -1) {
+                "f,un,eq,ueq,olt,ult,ole,ule,sf,ngle,sf,ngle,seq,ngl,lt,nge,le,ngt".split(',').forEach(function (cond, index, array) {
+                    let newinst = inst.slice();
+                    let rawinst = newinst[0].slice(0, 2) + cond + ".";
+                    for (let datatype of 'd,s'.split(',')) {
+                        let newinst = inst.slice();
+                        newinst[0] = rawinst + datatype;
+                        newbases[newinst[0]] = newinst.slice(1);
+                    }
+                });
+            } else {
+                for (let datatype of 'd,s'.split(',')) {
+                    let newinst = inst.slice();
+                    let rawinst = inst[0] + datatype;
+                    newbases[rawinst] = newinst.slice(1);
+                }
             }
+        }
+        //encode the double/single type into the instruction bit field
+        for (let inst in newbases) {
+            let datatypestring;
+            if (inst.lastIndexOf(".d") !== -1) {
+                let double_string = FPU_format.double.toString(2);
+                datatypestring = double_string.slice(0, 2) + " " + double_string.slice(2);
+            }
+            if (inst.lastIndexOf(".s") !== -1) {
+                let single_string = FPU_format.single.toString(2);
+                datatypestring = single_string.slice(0, 2) + " " + single_string.slice(2);
+            }
+            if (inst.lastIndexOf(".w") !== -1) {
+                let word_string = FPU_format.word.toString(2);
+                datatypestring = word_string.slice(0, 2) + " " + word_string.slice(2);
+            }
+            newbases[inst][0] = newbases[inst][0].replace("ff fff", datatypestring);
         }
         return newbases;
     }
@@ -137,8 +168,9 @@ export class CPUInstrclass {
         I: [],
         RT: [],
         N: [],
-        FSRRR:[],
-        FSRR:[]
+        FSRRR: [],
+        FSRR: [],
+        FSCRR: []
     };
     INST_ALL = [];
     // instructions using relative PC
@@ -156,7 +188,7 @@ export class CPUInstrclass {
         let needRd;
         let needRt;
         let needImm;
-        let instructions = Lib.extend(Instructions.instructionTable,Instructions.floatingpoint_instructions());
+        let instructions = Lib.extend(Instructions.instructionTable, Instructions.floatingpoint_instructions());
 
 
         // instructions with signed imm (need convertion when encoding)
@@ -202,28 +234,20 @@ export class CPUInstrclass {
                 .replace(/c/g, '0') // @TODO: break code support
                 .replace(/a/g, 'i') // a is also i
                 .replace(/-/g, '0')
-                .replace(/f/g,'0')
+                .replace(/f/g, '0')
                 .replace(/ /g, ''); // no need for format
             let instCode = parseInt(cur.slice(0, 6), 2);
-            let copCode = parseInt(cur.slice(26,31),2);
-            let rs = parseInt(cur.slice(6, 11),2);
+            let copCode = parseInt(cur.slice(26, 31), 2);
+            let rs = parseInt(cur.slice(6, 11), 2);
             let rt = parseInt(cur.slice(11, 16), 2);
+            let fmt = parseInt(cur.slice(6,11),2);
             // NOTE: becareful with JavaScripts casting here
             // 0xffffffff > 0
             // 0xffffffff & 0xffffffff = -1
-            funcBody += 'var base = ' + (instCode << 26) + ';\n';
+            funcBody += `var base = (${instCode} << 26);\n`;
             // rs, rd, rt, fmt
-            if(type.lastIndexOf('FS',0) == 0)
-            {
-                if(inst.lastIndexOf(".s") > 0) {
-                    funcBody += `base |= (${FPU_format.single} << 21);\n`; // single fmt=0
-                }
-                if(inst.lastIndexOf(".d") > 0) {
-                    funcBody += `base |= (${FPU_format.double} << 21);\n`; // double fmt=1
-                }
-                if(inst.lastIndexOf(".w") > 0) {
-                    funcBody += `base |= (${FPU_format.word} << 21);\n`; // word fmt=4
-                }
+            if (type.lastIndexOf('FS', 0) == 0) {
+                funcBody += `base |= (${fmt} << 21);\n`;
                 if (cur.indexOf('t') > 0) {
                     funcBody += 'base |= (info.ft << 16);\n';
                 }
