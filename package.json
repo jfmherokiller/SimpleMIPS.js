@@ -17,7 +17,8 @@
   "scripts": {
     "test": "nyc mocha",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "prepare": "tsc -p ./ --declaration true --outDir dist"
+    "prepare": "tsc -p ./ --declaration true --outDir dist",
+    "postpublish": "rm -rf dist"
   },
   "repository": {
     "type": "git",
