@@ -1,5 +1,6 @@
 import {FPU_format} from "./index";
 import {Lib} from "../Lib";
+import {InstructionNode} from "../TokenNode/InstructionNode";
 
 export class Instructions {
     static instructionTable = {
@@ -215,8 +216,11 @@ export class CPUInstrclass {
         this.CreateTranslators(cur);
     }
 
-    private TranslateInstruction(cur) {
-
+    private TranslateInstruction(cur:InstructionNode) {
+        let InstrInfo = Instructions.instructionTable[cur.inst];
+        let InstrString = InstrInfo[0];
+        let InstrCatagory = InstrInfo[1];
+        let SignedOrUnsigned = InstrInfo[2];
     }
 
     private CreateTranslators(cur) {
