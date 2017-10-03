@@ -1,12 +1,17 @@
 language: node_js
 node_js:
-- "stable"
-
+- stable
 cache:
   directories:
-    - "node_modules"
-
+  - node_modules
 after_success:
-    - npm run coverage
+- npm run coverage
 notifications:
   email: false
+deploy:
+  provider: npm
+  email: jfmherokiller@gmail.com
+  api_key:
+    secure: 2zlneXLAd2GNe5XSUBz70QqNkagomRcDSbvsbIdWzJsQQLjMycyn9uEBOehwaOrjPhlsfyPq0Zr31zYR7UdRP0ue5KMp0IMUZjJg+rpZX7qXHB4r86l6oGWpKRpUu/2sbvPMcWUXZJc3fMveQKJN3EVgx7ahE4ksG11NdtpHhKaA5vgmZ8K88tByFHmHY6oGNJP1o07wyeKMhw8khcTzo/bjNkVQYYwsndResFkq8fPHz/uWZZfomqAiMAInBZAeoCz4fTaZB9r2J3hAerozFfuE9fHAa0kqRCyCdyebP9/3v7uIMnYpilwpwC3n15GG2utR4whAnDy8UFPnANEkk3aWYFskZ+W92ruFoQ6zniBlrMhsaYTtZBcKSZIOyi1C7CworBC7fGdoxKJrTYH9U9xTwDr2Jn1hy6leTw2LPSSoQWyl/BGJtcS4GNYvlWeICFO/cnstLgoA41XOSJtmmslHZTEDsR07WuAYxOIwEiZlakeswGDDEpoA22k8qZKLeTwWAgDEcYkhhonp/IikQcHPsO3VhOK0MzWANrILl7mipqA2fPpz+i1FjDbrrxaoKI0kXJlZcbsCgLkoUFg4V0RMHCB/WJK6MjTx+UOo0U50A8uX/FQK+Dty9fGCJcrsNwmumOyQrAjskJpewUzdVZ9m9JdR1fYlq7POWY+TrM0=
+  on:
+    branch: master
