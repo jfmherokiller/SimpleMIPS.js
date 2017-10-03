@@ -1015,7 +1015,8 @@ export class Assembler {
                 }
             } else {
                 let startIndex = (currentToken.addr - statusTable.textStartAddr) >> 2;
-                text[startIndex] = this.InstructionClasses.translators[currentToken.inst](currentToken);
+                text[startIndex] = this.InstructionClasses.TranslateInstruction(currentToken);
+                //text[startIndex] = this.InstructionClasses.translators[currentToken.inst](currentToken);
             }
         }
     }

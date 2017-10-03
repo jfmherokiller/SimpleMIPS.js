@@ -182,7 +182,6 @@ export class CPUInstrclass {
     // instructions with unsigned imm
     INST_UNSIGNED = [];
     INST_SIGNED = [];
-    translators = {};
 
     constructor() {
         let cur;
@@ -214,7 +213,7 @@ export class CPUInstrclass {
                 }
             }
         }
-        this.CreateTranslators(cur);
+        //this.CreateTranslators(cur);
     }
 
     TranslateInstruction(cur: InstructionNode): number {
@@ -228,11 +227,23 @@ export class CPUInstrclass {
         .replace(/-/g, '0')
         .replace(/ /g, ''); // no need for format
         //replace source register
-        FinishedInstr = FinishedInstr.replace("sssss",cur.rs.toString(2));
+        if(FinishedInstr.indexOf("s")!== -1)
+        {
+            let ValueToInsert = Lib.padLeft(cur.rs.toString(2),'0',5);
+            FinishedInstr = FinishedInstr.replace("sssss",ValueToInsert);
+        }
         //replace destination register
-        FinishedInstr = FinishedInstr.replace("ddddd",cur.rd.toString(2));
+        if(FinishedInstr.indexOf("d")!== -1)
+        {
+            let ValueToInsert = Lib.padLeft(cur.rd.toString(2),'0',5);
+            FinishedInstr = FinishedInstr.replace("ddddd",ValueToInsert);
+        }
         //replace 2nd source register
-        FinishedInstr = FinishedInstr.replace("ttttt",cur.rt.toString(2));
+        if(FinishedInstr.indexOf("t") !== -1)
+        {
+            let ValueToInsert = Lib.padLeft(cur.rt.toString(2),'0',5);
+            FinishedInstr = FinishedInstr.replace("ttttt",ValueToInsert);
+        }
         //handle immediate
         if(FinishedInstr.indexOf("i") !== -1)
         {
@@ -245,21 +256,29 @@ export class CPUInstrclass {
                 {
                     if(cur.imm<0)
                     {
-                        FinishedInstr.replace(/i+/,Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2),'0',immLength))
+                        let ValueToInsert = Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2),'0',immLength);
+                        FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
 
                     } else {
-                        FinishedInstr.replace(/i+/,Lib.padLeft(cur.imm.toString(2),'0',immLength))
+                        let ValueToInsert = Lib.padLeft(cur.imm.toString(2),'0',immLength);
+                        FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
                     }
                 } else {
-                    FinishedInstr.replace(/i+/,Lib.padLeft(cur.imm.toString(2),'0',immLength))
+                    let ValueToInsert = Lib.padLeft((cur.imm >> 1).toString(2),'0',immLength);
+                    FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
                 }
             }
+        }
+        if(FinishedInstr.length < 32)
+        {
+
+            FinishedInstr = Lib.padRight(FinishedInstr,'0',32)
         }
 
     return parseInt(FinishedInstr,2);
 }
 
-    private CreateTranslators(cur) {
+/*    private CreateTranslators(cur) {
 // build translators
         let translators = {};
         let funcBody;
@@ -343,5 +362,5 @@ export class CPUInstrclass {
             translators[inst] = new Function('info', funcBody);
         }
         this.translators = translators;
-    }
+    }*/
 }
