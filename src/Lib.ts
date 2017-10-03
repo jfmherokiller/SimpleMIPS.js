@@ -16,6 +16,14 @@ export class Lib {
         }
         return str;
     }
+    static padRight(str, chr, len) {
+        let n = len - str.length;
+        if (n <= 0) return str;
+        for (let i = 0; i < n; i++) {
+            str = str + chr;
+        }
+        return str;
+    }
 
     static extend(src, obj, obj2?) {
         if (obj2) {
@@ -49,5 +57,9 @@ export class Lib {
             }
         }
         return result;
+    }
+    //twos compliment
+    static TwosCompliment(MyNumber){
+        return (~MyNumber + 1 >>> 0);
     }
 }

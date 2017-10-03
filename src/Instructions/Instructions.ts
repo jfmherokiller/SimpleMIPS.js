@@ -156,6 +156,7 @@ export class Instructions {
 }
 
 export class CPUInstrclass {
+    instructions;
     INST_CAT = {	// instruction categorized by assembly format
         RRR: [],
         RRI: [],
@@ -189,13 +190,13 @@ export class CPUInstrclass {
         let needRd;
         let needRt;
         let needImm;
-        let instructions = Lib.extend(Instructions.instructionTable, Instructions.floatingpoint_instructions());
+        this.instructions = Lib.extend(Instructions.instructionTable, Instructions.floatingpoint_instructions());
 
 
         // instructions with signed imm (need convertion when encoding)
         // classify
-        for (let inst in instructions) {
-            cur = instructions[inst];
+        for (let inst in this.instructions) {
+            cur = this.instructions[inst];
             if (cur[0] && cur[0].length > 0) {
                 this.INST_CAT[cur[1]].push(inst);
                 this.INST_ALL.push(inst);
@@ -216,12 +217,47 @@ export class CPUInstrclass {
         this.CreateTranslators(cur);
     }
 
-    private TranslateInstruction(cur:InstructionNode) {
-        let InstrInfo = Instructions.instructionTable[cur.inst];
-        let InstrString = InstrInfo[0];
-        let InstrCatagory = InstrInfo[1];
-        let SignedOrUnsigned = InstrInfo[2];
-    }
+    TranslateInstruction(cur: InstructionNode): number {
+    let InstrInfo = this.instructions[cur.inst];
+    let InstrString = InstrInfo[0];
+    let InstrCatagory = InstrInfo[1];
+    let SignedOrUnsigned = InstrInfo[2];
+    //remove formatting on the instruction string
+    let FinishedInstr = InstrString.replace(/c/g, '0') // @TODO: break code support
+        .replace(/a/g, 'i') // a is also i
+        .replace(/-/g, '0')
+        .replace(/ /g, ''); // no need for format
+        //replace source register
+        FinishedInstr = FinishedInstr.replace("sssss",cur.rs.toString(2));
+        //replace destination register
+        FinishedInstr = FinishedInstr.replace("ddddd",cur.rd.toString(2));
+        //replace 2nd source register
+        FinishedInstr = FinishedInstr.replace("ttttt",cur.rt.toString(2));
+        //handle immediate
+        if(FinishedInstr.indexOf("i") !== -1)
+        {
+            let immStartIdx = FinishedInstr.indexOf('i');
+            let immEndIdx = FinishedInstr.lastIndexOf('i');
+            let immLength = immEndIdx - immStartIdx;
+            if(immLength > 0)
+            {
+                if(SignedOrUnsigned === "S")
+                {
+                    if(cur.imm<0)
+                    {
+                        FinishedInstr.replace(/i+/,Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2),'0',immLength))
+
+                    } else {
+                        FinishedInstr.replace(/i+/,Lib.padLeft(cur.imm.toString(2),'0',immLength))
+                    }
+                } else {
+                    FinishedInstr.replace(/i+/,Lib.padLeft(cur.imm.toString(2),'0',immLength))
+                }
+            }
+        }
+
+    return parseInt(FinishedInstr,2);
+}
 
     private CreateTranslators(cur) {
 // build translators
@@ -253,15 +289,15 @@ export class CPUInstrclass {
             if (type.lastIndexOf('FS', 0) == 0) {
                 funcBody += `base |= (${fmt} << 21);\n`;
                 if (cur.indexOf('t') > 0) {
-                    funcBody += 'base |= (info.ft << 16);\n';
+                    funcBody += 'base |= (info.rt << 16);\n';
                 }
                 if (cur.indexOf('s') > 0) {
-                    funcBody += 'base |= (info.fs << 11);\n';
+                    funcBody += 'base |= (info.rs << 11);\n';
                 } else {
                     funcBody += `base |= (${rs} << 11);\n`;
                 }
                 if (cur.indexOf('d') > 0) {
-                    funcBody += 'base |= (info.fd << 6);\n';
+                    funcBody += 'base |= (info.rd << 6);\n';
                 }
 
                 funcBody += `base |= (${copCode} << 0);\n`; // coprocessor code

@@ -731,9 +731,9 @@ export class Assembler {
                     TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR
                 ]);
                 if (expectedTokens) {
-                    result.fd = expectedTokens[0].value;
-                    result.fs = expectedTokens[2].value;
-                    result.ft = expectedTokens[4].value;
+                    result.rd = expectedTokens[0].value;
+                    result.rs = expectedTokens[2].value;
+                    result.rt = expectedTokens[4].value;
                 } else {
                     throw new Error('Expecting 3 Registers for ' + instName);
                 }
@@ -951,15 +951,6 @@ export class Assembler {
             }
             if (typeof(cur.rd) == 'string') {
                 cur.rd = Assembler.convertRegName(cur.rd);
-            }
-            if (typeof(cur.ft) == 'string') {
-                cur.ft = Assembler.convertRegName(cur.ft);
-            }
-            if (typeof(cur.fs) == 'string') {
-                cur.fs = Assembler.convertRegName(cur.fs);
-            }
-            if (typeof(cur.fd) == 'string') {
-                cur.fd = Assembler.convertRegName(cur.fd);
             }
             if (typeof(cur.imm) == 'string') {
                 let newVal;
