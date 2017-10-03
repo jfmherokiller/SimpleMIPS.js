@@ -1,6 +1,6 @@
 {
   "name": "mips_assembler_simulator",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.0.4",
