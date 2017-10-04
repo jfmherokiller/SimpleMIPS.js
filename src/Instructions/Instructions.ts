@@ -1,9 +1,7 @@
 import {FPU_format} from "./index";
 import {Lib} from "../Lib";
 import {InstructionNode} from "../TokenNode/InstructionNode";
-interface InstructionTable {
-    [key:string]:string[]
-}
+
 export class Instructions {
     static instructionTable = {
         // load/store
@@ -81,7 +79,7 @@ export class Instructions {
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
         // floating point stuff
         // @Todo
-    } as InstructionTable;
+    };
 
     static floatingpoint_instructions() {
         let newbases = {};
@@ -162,7 +160,7 @@ export class Instructions {
 }
 
 export class CPUInstrclass {
-    instructions:InstructionTable;
+    instructions;
     INST_CAT = {	// instruction categorized by assembly format
         RRR: [],
         RRI: [],
