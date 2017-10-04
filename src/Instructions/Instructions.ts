@@ -176,8 +176,7 @@ export class CPUInstrclass {
         I: [],
         RT: [],
         N: [],
-        FSRRR: [],
-        FSRR: [],
+        R: [],
         FSCRR: []
     };
     INST_ALL = [];
