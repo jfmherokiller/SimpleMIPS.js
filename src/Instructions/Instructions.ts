@@ -1,7 +1,9 @@
 import {FPU_format} from "./index";
 import {Lib} from "../Lib";
 import {InstructionNode} from "../TokenNode/InstructionNode";
-
+interface InstructionTable {
+    [key:string]:string[]
+}
 export class Instructions {
     static instructionTable = {
         // load/store
@@ -18,8 +20,12 @@ export class Instructions {
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
         'mtlo': ['0000 00ss sss0 0000 0000 0000 0001 0011', 'RS', 'S'],
-        'mtc0': ['0100 0000 100s ssss dddd d000 0000 0iii', 'RRI', 'N'], // CPR[0,rd,sel] ← data
-        'mtc1': ['0100 0100 100t tttt ssss s000 0000 0000', 'RR', 'N'], //move word from rt to float reg fs;fs ← rt
+        'mtc0': ['0100 0000 100t tttt dddd d000 0000 0iii', 'RRI', 'N'], // CPR[0,rd,sel] ← data
+        'mtc1': ['0100 0100 100t tttt ssss s000 0000 0000', 'RR', 'N'], // move word from rt to float reg fs;fs ← rt
+        'mtc2': ['0100 1000 100t tttt dddd d000 0000 0iii','RRI','N'], // CPR[2,rd,sel] ←GPR[rt]
+        'mfc0': ['0100 0000 000t tttt dddd d000 0000 0iii','RRI','N'], // rt ← CPR[0,rd,sel]
+        'mfc1': ['0100 0100 000t tttt ssss s000 0000 0000','RR','N'], // rt ← fs
+        'mfc2': ['0100 1000 000t tttt dddd d000 0000 0iii','RRI','N'], // GPR[rt] ←CPR[2,rd,sel]
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
@@ -27,8 +33,8 @@ export class Instructions {
         'addu': ['0000 00ss ssst tttt dddd d000 0010 0001', 'RRR', 'N'], // $d=$s+$t unsigned no ov
         'div': ['0000 00ss ssst tttt 0000 0000 0001 1010', 'RR', 'S'], // $LO = $s / $t; $HI = $s % $t;
         'divu': ['0000 00ss ssst tttt 0000 0000 0001 1011', 'RR', 'U'], // $LO = $s / $t; $HI = $s % $t;
-        'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000', 'RR', 'N'], //$LO = $s * $t;
-        'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001', 'RR', 'N'],//$LO = $s * $t;
+        'mult': ['0000 00ss ssst tttt 0000 0000 0001 1000', 'RR', 'N'], // $LO = $s * $t;
+        'multu': ['0000 00ss ssst tttt 0000 0000 0001 1001', 'RR', 'N'],// $LO = $s * $t;
         'sub': ['0000 00ss ssst tttt dddd d000 0010 0010', 'RRR', 'N'], // $d=$s-$t with ov
         'subu': ['0000 00ss ssst tttt dddd d000 0010 0011', 'RRR', 'N'], // $d=$s-$t unsigned no ov
         'slt': ['0000 00ss ssst tttt dddd d000 0010 1010', 'RRR', 'N'], // $d=($s<$t)?1:0 signed
@@ -75,29 +81,29 @@ export class Instructions {
         'prints': ['1111 11ss sss0 0000 0000 0000 0000 0010', 'RS', 'N'],  // print string@$s
         // floating point stuff
         // @Todo
-    };
+    } as InstructionTable;
 
     static floatingpoint_instructions() {
         let newbases = {};
         let instruction_bases = [
             //arithmatic
-            ['abs.', '0100 01ff fff0 0000 ssss sddd dd00 0101', 'FSRR', 'N'],
-            ['add.', '0100 01ff ffft tttt ssss sddd dd00 0000', 'FSRRR', 'N'],
-            ['ceil.w.', '0100 01ff fff0 0000 ssss sddd dd00 1110', 'FSRR', 'N'],
-            ['cvt.d.', '0100 01ff fff0 0000 ssss sddd dd10 0001', 'FSRR', 'N'],
-            ['cvt.s.', '0100 01ff fff0 0000 ssss sddd dd10 0000', 'FSRR', 'N'],
-            ['cvt.w.', '0100 01ff fff0 0000 ssss sddd dd10 0100', 'FSRR', 'N'],
-            ['div.', '0100 01ff ffft tttt ssss sddd dd00 0011', 'FSRRR', 'N'],
-            ['mul.', '0100 01ff ffft tttt ssss sddd dd00 0010', 'FSRRR', 'N'],
-            ['floor.w.', '0100 01ff fff0 0000 ssss sddd dd00 1111', 'FSRR', 'N'],
-            ['round.w.', '0100 01ff fff0 0000 ssss sddd dd00 1100', 'FSRR', 'N'],
-            ['sqrt.', '0100 01ff fff0 0000 ssss sddd dd00 0100', 'FSRR', 'N'],
-            ['sub.', '0100 01ff ffft tttt ssss sddd dd00 0001', 'FSRRR', 'N'],
-            ['trunc.w.', '0100 01ff fff0 0000 ssss sddd dd00 1101', 'FSRR', 'N'],
+            ['abs.', '0100 01ff fff0 0000 ssss sddd dd00 0101', 'RR', 'N'],
+            ['add.', '0100 01ff ffft tttt ssss sddd dd00 0000', 'RRR', 'N'],
+            ['ceil.w.', '0100 01ff fff0 0000 ssss sddd dd00 1110', 'RR', 'N'],
+            ['cvt.d.', '0100 01ff fff0 0000 ssss sddd dd10 0001', 'RR', 'N'],
+            ['cvt.s.', '0100 01ff fff0 0000 ssss sddd dd10 0000', 'RR', 'N'],
+            ['cvt.w.', '0100 01ff fff0 0000 ssss sddd dd10 0100', 'RR', 'N'],
+            ['div.', '0100 01ff ffft tttt ssss sddd dd00 0011', 'RRR', 'N'],
+            ['mul.', '0100 01ff ffft tttt ssss sddd dd00 0010', 'RRR', 'N'],
+            ['floor.w.', '0100 01ff fff0 0000 ssss sddd dd00 1111', 'RR', 'N'],
+            ['round.w.', '0100 01ff fff0 0000 ssss sddd dd00 1100', 'RR', 'N'],
+            ['sqrt.', '0100 01ff fff0 0000 ssss sddd dd00 0100', 'RR', 'N'],
+            ['sub.', '0100 01ff ffft tttt ssss sddd dd00 0001', 'RRR', 'N'],
+            ['trunc.w.', '0100 01ff fff0 0000 ssss sddd dd00 1101', 'RR', 'N'],
             //movement
-            ['mov.', '0100 01ff fff0 0000 ssss sddd dd00 0110', 'FSRR', 'N'],
+            ['mov.', '0100 01ff fff0 0000 ssss sddd dd00 0110', 'RR', 'N'],
             //logical
-            ['neg.', '0100 01ff fff0 0000 ssss sddd dd00 0111', 'FSRR', 'N'],
+            ['neg.', '0100 01ff fff0 0000 ssss sddd dd00 0111', 'RR', 'N'],
             //comparison
             ['c.cond.', '0100 01ff ffft tttt ssss sCCC 0011 OOOO', 'FSCRR', 'N']
         ];
@@ -156,7 +162,7 @@ export class Instructions {
 }
 
 export class CPUInstrclass {
-    instructions;
+    instructions:InstructionTable;
     INST_CAT = {	// instruction categorized by assembly format
         RRR: [],
         RRI: [],

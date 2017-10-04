@@ -38,7 +38,7 @@ export class Assembler {
     }
 
 
-    static disassemble(inst) {
+/*    static disassemble(inst) {
         // @todo
         let opcode = (inst & 0xfc000000) >>> 26,
             func = inst & 0x3f,
@@ -228,7 +228,7 @@ export class Assembler {
             .replace('addr', '0x' + imm.toString(16))
             .replace('offset', '0x' + imm.toString(16))
             .replace('imm', imm);
-    }
+    }*/
 
     // return data, memory array, their size and offset,
     // and source map
@@ -726,18 +726,6 @@ export class Assembler {
                     throw new Error('Expecting 1 immediate for ' + instName);
                 }
                 break;
-            case this.InstructionTypes.INST_TYPES.FSRRR:
-                expectedTokens = tokenList.expect([
-                    TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR, TOKEN_TYPE.COMMA, TOKEN_TYPE.REGOPR
-                ]);
-                if (expectedTokens) {
-                    result.rd = expectedTokens[0].value;
-                    result.rs = expectedTokens[2].value;
-                    result.rt = expectedTokens[4].value;
-                } else {
-                    throw new Error('Expecting 3 Registers for ' + instName);
-                }
-                break;
             case this.InstructionTypes.INST_TYPES.N:
                 // nothing to expect, do nothing
                 break;
@@ -918,7 +906,7 @@ export class Assembler {
         const GRP_regAliases = ('$zero,$at,$v0,$v1,$a0,$a1,$a2,$a3,' +
             '$t0,$t1,$t2,$t3,$t4,$t5,$t6,$t7,' +
             '$s0,$s1,$s2,$s3,$s4,$s5,$s6,$s7,' +
-            '$t8,$t9,$k0,$k1,$gp,$sp,$fp,$ra,').split(',');
+            '$t8,$t9,$k0,$k1,$gp,$sp,$fp,$ra').split(',');
         // GPRs only
         let idx;
         if (regname == 'zero') {
