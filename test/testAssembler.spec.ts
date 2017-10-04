@@ -61,6 +61,10 @@ describe("Assembler Tests", function () {
             {instruction: `multu $s1,$s2`},
             {instruction: `sub $at,$s1,$s2`},
             {instruction: `subu $at,$s1,$s2`},
+            {instruction: `slt $at,$at,$at`},
+            {instruction: `slti $at,$at, 1`},
+            {instruction: `sltu $at,$at, $at`},
+            {instruction: `sltiu $at,$at, 1`},
         ];
         memoryaccess_opcodelist.forEach(function (opcode) {
             it('correctly assembles the opcode ' + opcode.instruction, function () {
