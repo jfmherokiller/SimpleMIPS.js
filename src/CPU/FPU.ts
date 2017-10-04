@@ -1,6 +1,8 @@
 
+import {Lib} from "../Lib";
+
 export class FPU {
-    registerfile:Float32Array;
+    registerFile:Float32Array;
     //function which should split the double format used by javascript into 2 single precision floats
     static split_double(input)
     {
@@ -11,25 +13,25 @@ export class FPU {
     }
     extract_double(registerVal)
     {
-        return this.registerfile[registerVal] + this.registerfile[registerVal-1];
+        return this.registerFile[registerVal] + this.registerFile[registerVal-1];
     }
     inject_double(registerVal,value)
     {
         let spitval = FPU.split_double(value);
-        this.registerfile[registerVal] = spitval[0];
-        this.registerfile[registerVal-1] = spitval[1];
+        this.registerFile[registerVal] = spitval[0];
+        this.registerFile[registerVal-1] = spitval[1];
     }
     extract_single(registerVal)
     {
-        return this.registerfile[registerVal];
+        return this.registerFile[registerVal];
     }
     inject_single(registerVal,value)
     {
-        this.registerfile[registerVal] = value;
+        this.registerFile[registerVal] = value;
     }
 
     constructor() {
-        this.registerfile = new Float32Array(32);
+        this.registerFile = new Float32Array(32);
     }
 
 //double ops
@@ -139,5 +141,18 @@ export class FPU {
         let arg1 = this.extract_single(rs);
         let ans = -(arg1);
         this.inject_single(rd,ans);
+    }
+    dumpRegisterFile(buffer?) {
+        if (!buffer) {
+            let str = '';
+            for (let i = 0; i < 34; i++) {
+                str += 'r' + i + '\t: 0x' + Lib.padLeft(this.registerFile[i].toString(16), '0', 8) + '\n';
+            }
+            return str;
+        } else {
+            for (let i = 0; i < 34; i++) {
+                buffer[i] = this.registerFile[i];
+            }
+        }
     }
 }
