@@ -216,6 +216,11 @@ export class CPUInstrclass {
         //this.CreateTranslators(cur);
     }
 
+    /**
+     * @desc This function translates the instruction node into its equivalent 32bit number
+     * @param {InstructionNode} cur
+     * @returns {number}
+     */
     TranslateInstruction(cur: InstructionNode): number {
     let InstrInfo = this.instructions[cur.inst];
     let InstrString = InstrInfo[0];
@@ -254,8 +259,10 @@ export class CPUInstrclass {
             {
                 if(SignedOrUnsigned === "S")
                 {
+
                     if(cur.imm<0)
                     {
+                        //convert negative immediate values to thier 2s complement equivalent
                         let ValueToInsert = Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2),'0',immLength);
                         FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
 
@@ -269,9 +276,9 @@ export class CPUInstrclass {
                 }
             }
         }
+        //fix the instruction not being of length 32
         if(FinishedInstr.length < 32)
         {
-
             FinishedInstr = Lib.padRight(FinishedInstr,'0',32)
         }
 
