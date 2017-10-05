@@ -20,10 +20,10 @@ export class Instructions {
         'mtlo': ['0000 00ss sss0 0000 0000 0000 0001 0011', 'RS', 'S'],
         'mtc0': ['0100 0000 100t tttt dddd d000 0000 0iii', 'RRI', 'N'], // CPR[0,rd,sel] ← data
         'mtc1': ['0100 0100 100t tttt ssss s000 0000 0000', 'RR', 'N'], // move word from rt to float reg fs;fs ← rt
-        'mtc2': ['0100 1000 100t tttt dddd d000 0000 0iii','RRI','N'], // CPR[2,rd,sel] ←GPR[rt]
-        'mfc0': ['0100 0000 000t tttt dddd d000 0000 0iii','RRI','N'], // rt ← CPR[0,rd,sel]
-        'mfc1': ['0100 0100 000t tttt ssss s000 0000 0000','RR','N'], // rt ← fs
-        'mfc2': ['0100 1000 000t tttt dddd d000 0000 0iii','RRI','N'], // GPR[rt] ←CPR[2,rd,sel]
+        'mtc2': ['0100 1000 100t tttt dddd d000 0000 0iii', 'RRI', 'N'], // CPR[2,rd,sel] ←GPR[rt]
+        'mfc0': ['0100 0000 000t tttt dddd d000 0000 0iii', 'RRI', 'N'], // rt ← CPR[0,rd,sel]
+        'mfc1': ['0100 0100 000t tttt ssss s000 0000 0000', 'RR', 'N'], // rt ← fs
+        'mfc2': ['0100 1000 000t tttt dddd d000 0000 0iii', 'RRI', 'N'], // GPR[rt] ←CPR[2,rd,sel]
         // arithmetic
         'addi': ['0010 00ss ssst tttt iiii iiii iiii iiii', 'RRI', 'S'], // $t=$s+imm with ov
         'addiu': ['0010 01ss ssst tttt iiii iiii iiii iiii', 'RRI', 'U'], // $t=$s+imm unsigned no ov
@@ -225,152 +225,146 @@ export class CPUInstrclass {
      * @returns {number}
      */
     TranslateInstruction(cur: InstructionNode): number {
-    let InstrInfo = this.instructions[cur.inst];
-    let InstrString = InstrInfo[0];
-    let InstrCatagory = InstrInfo[1];
-    let SignedOrUnsigned = InstrInfo[2];
-    //remove formatting on the instruction string
-    let FinishedInstr = InstrString.replace(/c/g, '0') // @TODO: break code support
-        .replace(/a/g, 'i') // a is also i
-        .replace(/-/g, '0')
-        .replace(/ /g, ''); // no need for format
+        let InstrInfo = this.instructions[cur.inst];
+        let InstrString = InstrInfo[0];
+        let InstrCatagory = InstrInfo[1];
+        let SignedOrUnsigned = InstrInfo[2];
+        //remove formatting on the instruction string
+        let FinishedInstr = InstrString.replace(/c/g, '0') // @TODO: break code support
+            .replace(/a/g, 'i') // a is also i
+            .replace(/-/g, '0')
+            .replace(/ /g, ''); // no need for format
         //replace source register
-        if(FinishedInstr.indexOf("s")!== -1)
-        {
-            let ValueToInsert = Lib.padLeft(cur.rs.toString(2),'0',5);
-            FinishedInstr = FinishedInstr.replace("sssss",ValueToInsert);
+        if (FinishedInstr.indexOf("s") !== -1) {
+            let ValueToInsert = Lib.padLeft(cur.rs.toString(2), '0', 5);
+            FinishedInstr = FinishedInstr.replace("sssss", ValueToInsert);
         }
         //replace destination register
-        if(FinishedInstr.indexOf("d")!== -1)
-        {
-            let ValueToInsert = Lib.padLeft(cur.rd.toString(2),'0',5);
-            FinishedInstr = FinishedInstr.replace("ddddd",ValueToInsert);
+        if (FinishedInstr.indexOf("d") !== -1) {
+            let ValueToInsert = Lib.padLeft(cur.rd.toString(2), '0', 5);
+            FinishedInstr = FinishedInstr.replace("ddddd", ValueToInsert);
         }
         //replace 2nd source register
-        if(FinishedInstr.indexOf("t") !== -1)
-        {
-            let ValueToInsert = Lib.padLeft(cur.rt.toString(2),'0',5);
-            FinishedInstr = FinishedInstr.replace("ttttt",ValueToInsert);
+        if (FinishedInstr.indexOf("t") !== -1) {
+            let ValueToInsert = Lib.padLeft(cur.rt.toString(2), '0', 5);
+            FinishedInstr = FinishedInstr.replace("ttttt", ValueToInsert);
         }
         //handle immediate
-        if(FinishedInstr.indexOf("i") !== -1)
-        {
+        if (FinishedInstr.indexOf("i") !== -1) {
             let immStartIdx = FinishedInstr.indexOf('i');
             let immEndIdx = FinishedInstr.lastIndexOf('i');
             let immLength = immEndIdx - immStartIdx;
-            if(immLength > 0)
+            if(cur.imm.toString(2).length > immLength)
             {
-                if(SignedOrUnsigned === "S")
-                {
+                throw Error("Error Immediate Bigger then field length")
+            }
+            if (SignedOrUnsigned === "S") {
 
-                    if(cur.imm<0)
-                    {
-                        //convert negative immediate values to thier 2s complement equivalent
-                        let ValueToInsert = Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2),'0',immLength);
-                        FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
+                if (cur.imm < 0) {
+                    //convert negative immediate values to thier 2s complement equivalent
+                    let ValueToInsert = Lib.padLeft(Lib.TwosCompliment(cur.imm).toString(2), '0', immLength);
+                    FinishedInstr = FinishedInstr.replace(/i+/g, ValueToInsert)
 
-                    } else {
-                        let ValueToInsert = Lib.padLeft(cur.imm.toString(2),'0',immLength);
-                        FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
-                    }
                 } else {
-                    let ValueToInsert = Lib.padLeft((cur.imm >> 1).toString(2),'0',immLength);
-                    FinishedInstr = FinishedInstr.replace(/i+/g,ValueToInsert)
+                    let ValueToInsert = Lib.padLeft(cur.imm.toString(2), '0', immLength);
+                    FinishedInstr = FinishedInstr.replace(/i+/g, ValueToInsert)
                 }
+            } else {
+                let ValueToInsert = Lib.padLeft((cur.imm >> 1).toString(2), '0', immLength);
+                FinishedInstr = FinishedInstr.replace(/i+/g, ValueToInsert)
             }
         }
         //fix the instruction not being of length 32
-        if(FinishedInstr.length < 32)
-        {
-            FinishedInstr = Lib.padRight(FinishedInstr,'0',32)
+        if (FinishedInstr.length < 32) {
+            FinishedInstr = Lib.padRight(FinishedInstr, '0', 32)
         }
 
-    return parseInt(FinishedInstr,2);
-}
+        return parseInt(FinishedInstr, 2);
+    }
 
-/*    private CreateTranslators(cur) {
-// build translators
-        let translators = {};
-        let funcBody;
-        let funcCode;
-        let immStartIdx;
-        let immEndIdx;
-        let immLength;
-        for (let inst in Instructions.instructionTable) {
-            funcBody = '';
-            let type = Instructions.instructionTable[inst][1];
-            cur = Instructions.instructionTable[inst][0]
-                .replace(/c/g, '0') // @TODO: break code support
-                .replace(/a/g, 'i') // a is also i
-                .replace(/-/g, '0')
-                .replace(/f/g, '0')
-                .replace(/ /g, ''); // no need for format
-            let instCode = parseInt(cur.slice(0, 6), 2);
-            let copCode = parseInt(cur.slice(26, 31), 2);
-            let rs = parseInt(cur.slice(6, 11), 2);
-            let rt = parseInt(cur.slice(11, 16), 2);
-            let fmt = parseInt(cur.slice(6,11),2);
-            // NOTE: becareful with JavaScripts casting here
-            // 0xffffffff > 0
-            // 0xffffffff & 0xffffffff = -1
-            funcBody += `var base = (${instCode} << 26);\n`;
-            // rs, rd, rt, fmt
-            if (type.lastIndexOf('FS', 0) == 0) {
-                funcBody += `base |= (${fmt} << 21);\n`;
-                if (cur.indexOf('t') > 0) {
-                    funcBody += 'base |= (info.rt << 16);\n';
-                }
-                if (cur.indexOf('s') > 0) {
-                    funcBody += 'base |= (info.rs << 11);\n';
+    /*    private CreateTranslators(cur) {
+    // build translators
+            let translators = {};
+            let funcBody;
+            let funcCode;
+            let immStartIdx;
+            let immEndIdx;
+            let immLength;
+            for (let inst in Instructions.instructionTable) {
+                funcBody = '';
+                let type = Instructions.instructionTable[inst][1];
+                cur = Instructions.instructionTable[inst][0]
+                    .replace(/c/g, '0') // @TODO: break code support
+                    .replace(/a/g, 'i') // a is also i
+                    .replace(/-/g, '0')
+                    .replace(/f/g, '0')
+                    .replace(/ /g, ''); // no need for format
+                let instCode = parseInt(cur.slice(0, 6), 2);
+                let copCode = parseInt(cur.slice(26, 31), 2);
+                let rs = parseInt(cur.slice(6, 11), 2);
+                let rt = parseInt(cur.slice(11, 16), 2);
+                let fmt = parseInt(cur.slice(6,11),2);
+                // NOTE: becareful with JavaScripts casting here
+                // 0xffffffff > 0
+                // 0xffffffff & 0xffffffff = -1
+                funcBody += `var base = (${instCode} << 26);\n`;
+                // rs, rd, rt, fmt
+                if (type.lastIndexOf('FS', 0) == 0) {
+                    funcBody += `base |= (${fmt} << 21);\n`;
+                    if (cur.indexOf('t') > 0) {
+                        funcBody += 'base |= (info.rt << 16);\n';
+                    }
+                    if (cur.indexOf('s') > 0) {
+                        funcBody += 'base |= (info.rs << 11);\n';
+                    } else {
+                        funcBody += `base |= (${rs} << 11);\n`;
+                    }
+                    if (cur.indexOf('d') > 0) {
+                        funcBody += 'base |= (info.rd << 6);\n';
+                    }
+
+                    funcBody += `base |= (${copCode} << 0);\n`; // coprocessor code
+
                 } else {
-                    funcBody += `base |= (${rs} << 11);\n`;
-                }
-                if (cur.indexOf('d') > 0) {
-                    funcBody += 'base |= (info.rd << 6);\n';
+
+                    if (cur.indexOf('s') > 0) {
+                        funcBody += 'base |= (info.rs << 21);\n';
+                    } else {
+                        funcBody += `base |= (${rs} << 21);\n`
+                    }
+                    if (cur.indexOf('d') > 0) {
+                        funcBody += 'base |= (info.rd << 11);\n';
+                    }
+                    if (cur.indexOf('t') > 0) {
+                        funcBody += 'base |= (info.rt << 16);\n';
+                    }
                 }
 
-                funcBody += `base |= (${copCode} << 0);\n`; // coprocessor code
-
-            } else {
-
-                if (cur.indexOf('s') > 0) {
-                    funcBody += 'base |= (info.rs << 21);\n';
-                } else {
-                    funcBody += `base |= (${rs} << 21);\n`
+                if (type === 'RSDRTI') {
+                    funcBody += `base |= (${rt} << 16);\n`;
                 }
-                if (cur.indexOf('d') > 0) {
-                    funcBody += 'base |= (info.rd << 11);\n';
+                // imm
+                immStartIdx = cur.indexOf('i');
+                immEndIdx = cur.lastIndexOf('i');
+                immLength = immEndIdx - immStartIdx;
+                if (immLength > 0) {
+                    if (this.INST_SIGNED.indexOf(inst) >= 0) {
+                        // convert signed immediate number to complement form
+                        funcBody += 'base |= (((info.imm<0)?' + (1 << (immLength + 1)) + '+info.imm:info.imm) << ' + (31 - immEndIdx) + ');\n';
+                    } else {
+                        funcBody += 'base |= (info.imm << ' + (31 - immEndIdx) + ');\n';
+                    }
                 }
-                if (cur.indexOf('t') > 0) {
-                    funcBody += 'base |= (info.rt << 16);\n';
+                // function code
+                if (immEndIdx < 26) {
+                    //console.log(cur.slice(26, 32));
+                    funcCode = parseInt(cur.slice(26, 32), 2);
+                    funcBody += 'base |= ' + (funcCode) + ';\n';
                 }
+                funcBody += 'if (base < 0) base = 4294967296 + base;\n';
+                funcBody += 'return base;';
+                translators[inst] = new Function('info', funcBody);
             }
-
-            if (type === 'RSDRTI') {
-                funcBody += `base |= (${rt} << 16);\n`;
-            }
-            // imm
-            immStartIdx = cur.indexOf('i');
-            immEndIdx = cur.lastIndexOf('i');
-            immLength = immEndIdx - immStartIdx;
-            if (immLength > 0) {
-                if (this.INST_SIGNED.indexOf(inst) >= 0) {
-                    // convert signed immediate number to complement form
-                    funcBody += 'base |= (((info.imm<0)?' + (1 << (immLength + 1)) + '+info.imm:info.imm) << ' + (31 - immEndIdx) + ');\n';
-                } else {
-                    funcBody += 'base |= (info.imm << ' + (31 - immEndIdx) + ');\n';
-                }
-            }
-            // function code
-            if (immEndIdx < 26) {
-                //console.log(cur.slice(26, 32));
-                funcCode = parseInt(cur.slice(26, 32), 2);
-                funcBody += 'base |= ' + (funcCode) + ';\n';
-            }
-            funcBody += 'if (base < 0) base = 4294967296 + base;\n';
-            funcBody += 'return base;';
-            translators[inst] = new Function('info', funcBody);
-        }
-        this.translators = translators;
-    }*/
+            this.translators = translators;
+        }*/
 }
