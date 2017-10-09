@@ -14,6 +14,8 @@ export class Instructions {
         'sb': ['1010 00ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (byte)mem[$s+imm]=$t
         'sh': ['1010 01ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (halfword)mem[$s+imm]=$t, must align
         'sw': ['1010 11ss ssst tttt iiii iiii iiii iiii', 'RC', 'S'], // (word)mem[$s+imm]=$t, must align
+        'ldc1':['1101 01ss ssst tttt iiii iiii iiii iiii','RC','N'], // ft ← memory[base+offset]
+        'ldc2':['1101 10ss ssst tttt iiii iiii iiii iiii','RC','N'], // rt ← memory[base+offset]
         'mfhi': ['0000 0000 0000 0000 dddd d000 0001 0000', 'RT', 'S'],
         'mflo': ['0000 0000 0000 0000 dddd d000 0001 0010', 'RT', 'S'],
         'mthi': ['0000 00ss sss0 0000 0000 0000 0001 0001', 'RS', 'S'],
